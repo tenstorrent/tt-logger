@@ -1,0 +1,12 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# Find fmt and spdlog dependency
+find_dependency(fmt REQUIRED)
+find_dependency(spdlog REQUIRED)
+
+# Include the targets file
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake")
+
+check_required_components(@PROJECT_NAME@)
