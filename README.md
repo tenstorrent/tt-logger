@@ -1,6 +1,6 @@
 # tt-logger
 
-A Tenstorrent logging library built on top of spdlog and fmt.
+A flexible and performant C++ logging library for Tenstorrent projects.
 
 ## Features
 
@@ -12,6 +12,7 @@ A Tenstorrent logging library built on top of spdlog and fmt.
 - Optional category specification, defaults to `LogAlways`.
 - Efficient logging: Formatting cost is avoided for `trace` and `debug` messages if the level is disabled.
 - Header-only library for easy integration.
+- Logging behavior can be customized, just as you would customize the default logger in spdlog.
 
 ## Log levels
 Log level is explicit in the API call.
