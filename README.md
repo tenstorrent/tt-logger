@@ -4,7 +4,14 @@ A Tenstorrent logging library built on top of spdlog and fmt.
 
 ## Features
 
-- Built on top of spdlog for robust logging infrastructure
+- Built on `spdlog` for robust and performant logging.
+- Utilizes the `{fmt}` library for Python-style, type-safe message formatting.
+- Compile-time validation of format strings.
+- Supports standard log levels: `trace`, `debug`, `info`, `warning`, `error`, `critical` (see table below for details).
+- Categorization of logs using `LogType` (e.g., `LogDevice`, `LogModel`).
+- Optional category specification, defaults to `LogAlways`.
+- Efficient logging: Formatting cost is avoided for `trace` and `debug` messages if the level is disabled.
+- Header-only library for easy integration.
 
 ## Log levels
 Log level is explicit in the API call.
@@ -42,9 +49,17 @@ Examples:
 
 ## Dependencies
 
-- spdlog (automatically managed via CPM)
-- fmt (automatically managed via CPM)
-- Catch2 (for tests)
+`tt-logger` requires the following libraries:
+
+- **fmt** (tested with `11.1.4`): Used for message formatting.
+- **spdlog** (tested with `1.15.2`): Used for the logging backend.
+
+These dependencies must be made available to `tt-logger` during the CMake configuration. You can achieve this by:
+
+1.  **Defining them in your project first:** Add `fmt` and `spdlog` (e.g., using `CPMAddPackage`, `FetchContent`, `find_package`, etc.) in your main `CMakeLists.txt` *before* adding `tt-logger`. This is the recommended approach for better version control across your project.
+2.  **Letting `tt-logger` fetch them:** If the `fmt::fmt-header-only` and `spdlog::spdlog_header_only` targets are not found, `tt-logger` will attempt to download them using CPM as specified in its `CMakeLists.txt`.
+
+- **Catch2**: Required only for building and running tests (`TT_LOGGER_BUILD_TESTING=ON`). This is managed within the `tests/` directory.
 
 ## Building
 
@@ -117,14 +132,25 @@ To be refined
 
 ## CMake Integration
 
-Add to your project's CMakeLists.txt:
+Choose what suits your needs:
 
+  - `add_subdirectory`
+  - `submodule`
+  - `ExternalProject_Add`
+  - `FetchContent`
+  - `CPM`
+
+CPM Example:
 ```cmake
 # Add CPM
 include(cmake/CPM.cmake)
 
 # Add tt-logger
-CPMAddPackage("gh:blozano-tt/tt-logger@0.2.0")
+CPMAddPackage(
+    NAME tt-logger
+    GITHUB_REPOSITORY blozano-tt/tt-logger
+    VERSION 1.0.0 # Or your desired version/tag
+)
 
 # Link to your target
 target_link_libraries(your_target PRIVATE tt-logger::tt-logger)
@@ -145,19 +171,3 @@ tt-logger/
 ├── CMakeLists.txt
 └── README.md
 ```
-
-## License
-
-Copyright 2024 Tenstorrent Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
