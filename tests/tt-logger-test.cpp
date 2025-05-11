@@ -1,8 +1,10 @@
 #include <fmt/std.h>  // needed for filesystem::path formatting
 #include <spdlog/sinks/base_sink.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
+#include <fstream>
 #include <sstream>
 #include <string>
 #include <tt-logger/tt-logger.hpp>
@@ -177,5 +179,39 @@ TEST_CASE("Default log type behavior", "[logger]") {
     SECTION("Defaults to LogAlways") {
         tt::log_info("Default type message");
         soft_check_log_contains(sink.get(), "[Always] Default type message");
+    }
+}
+
+TEST_CASE("File logging functionality", "[logger]") {
+    // Create a temporary file for testing
+    std::filesystem::path temp_log_file = std::filesystem::temp_directory_path() / "tt-logger-test.log";
+
+    SECTION("Basic file logging") {
+        // Create a file sink
+        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_st>(temp_log_file.string());
+        auto logger    = std::make_shared<spdlog::logger>("tt-logger-file-test", file_sink);
+        spdlog::set_default_logger(logger);
+
+        // Write some test logs
+        tt::log_info(tt::LogDevice, "Device file message");
+        tt::log_warning(tt::LogModel, "Model file warning");
+        tt::log_error(tt::LogLLRuntime, "Runtime file error");
+
+        // Flush and close the logger
+        logger->flush();
+        spdlog::drop_all();
+
+        // Read and verify the file contents
+        std::ifstream     log_file(temp_log_file);
+        std::stringstream buffer;
+        buffer << log_file.rdbuf();
+        std::string file_contents = buffer.str();
+
+        REQUIRE(file_contents.find("[Device] Device file message") != std::string::npos);
+        REQUIRE(file_contents.find("[Model] Model file warning") != std::string::npos);
+        REQUIRE(file_contents.find("[LLRuntime] Runtime file error") != std::string::npos);
+
+        // Clean up
+        std::filesystem::remove(temp_log_file);
     }
 }
