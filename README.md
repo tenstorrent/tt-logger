@@ -65,19 +65,15 @@ These dependencies must be made available to `tt-logger` during the CMake config
 ## Building
 
 ```bash
-# Create build directory
-mkdir build
-cd build
-
 # Configure and build
-cmake ..
-cmake --build .
+cmake -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
 
 # Run tests
-ctest
+ctest --test-dir build
 
 # Install (optional)
-cmake --install .
+cmake --install build
 ```
 
 ## Usage

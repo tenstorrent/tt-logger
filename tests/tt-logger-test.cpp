@@ -74,6 +74,11 @@ static void soft_check_log_contains(void * sink_ptr, const std::string & expecte
 TEST_CASE("Basic logging functionality", "[logger]") {
     auto sink = setup_logger();
 
+    SECTION("String literal") {
+        tt::log_info("This is a string literal");
+        soft_check_log_contains(sink.get(), "[Always] This is a string literal");
+    }
+
     SECTION("Info") {
         tt::log_info(tt::LogDevice, "Device message");
         soft_check_log_contains(sink.get(), "[Device] Device message");
