@@ -145,7 +145,7 @@ include(cmake/CPM.cmake)
 # Add tt-logger
 CPMAddPackage(
     NAME tt-logger
-    GITHUB_REPOSITORY blozano-tt/tt-logger
+    GITHUB_REPOSITORY tenstorrent/tt-logger
     VERSION 1.0.0 # Or your desired version/tag
 )
 
