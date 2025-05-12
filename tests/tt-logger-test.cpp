@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: © 2025 Tenstorrent AI ULC.
+//
+// SPDX-License-Identifier: Apache-2.0
+
 #include <fmt/std.h>  // needed for filesystem::path formatting
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
