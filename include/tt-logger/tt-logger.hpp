@@ -13,44 +13,39 @@
 #include <string_view>
 #include <utility>
 
-#define LOGGER_TYPES \
+#ifndef TT_LOGGER_TYPES
+#define TT_LOGGER_TYPES \
     X(Always)        \
     X(Test)          \
     X(Timer)         \
     X(Device)        \
-    X(Model)         \
     X(LLRuntime)     \
     X(Loader)        \
-    X(IO)            \
-    X(CompileTrisc)  \
     X(BuildKernels)  \
     X(Verif)         \
-    X(Golden)        \
     X(Op)            \
-    X(HLK)           \
-    X(HLKC)          \
-    X(Reportify)     \
-    X(GraphCompiler) \
     X(Dispatch)      \
     X(Fabric)        \
     X(Metal)         \
+    X(TTNN)          \
     X(MetalTrace)    \
     X(SiliconDriver) \
     X(EmulationDriver)
+#endif
 
 namespace tt {
 
 // clang-format off
 enum LogType {
 #define X(a) Log ## a,
-    LOGGER_TYPES
+    TT_LOGGER_TYPES
 #undef X
 };
 // clang-format on
 
 constexpr std::array<const char *, std::size_t(LogType::LogEmulationDriver) + 1> log_type_names = {
 #define X(name) #name,
-    LOGGER_TYPES
+    TT_LOGGER_TYPES
 #undef X
 };
 
@@ -138,4 +133,4 @@ template <> struct formatter<tt::LogType> : fmt::formatter<std::string_view> {
     }
 };
 }  // namespace fmt
-#undef LOGGER_TYPES
+#undef TT_LOGGER_TYPES
