@@ -92,8 +92,8 @@ TEST_CASE("Basic logging functionality", "[logger]") {
 
     SECTION("Debug") {
         spdlog::default_logger()->set_level(spdlog::level::debug);
-        tt::log_debug(tt::LogModel, "Model debug message");
-        soft_check_log_contains(sink.get(), "[Model] Model debug message");
+        tt::log_debug(tt::LogOp, "Model debug message");
+        soft_check_log_contains(sink.get(), "[Op] Model debug message");
     }
 
     SECTION("Warning") {
@@ -107,8 +107,8 @@ TEST_CASE("Basic logging functionality", "[logger]") {
     }
 
     SECTION("Critical") {
-        tt::log_critical(tt::LogModel, "Model critical error");
-        soft_check_log_contains(sink.get(), "[Model] Model critical error");
+        tt::log_critical(tt::LogOp, "Model critical error");
+        soft_check_log_contains(sink.get(), "[Op] Model critical error");
     }
 }
 
@@ -121,14 +121,14 @@ TEST_CASE("Format string functionality", "[logger]") {
     }
 
     SECTION("Multiple arguments") {
-        tt::log_info(tt::LogModel, "Model {} with {} parameters", "test", 42);
-        soft_check_log_contains(sink.get(), "[Model] Model test with 42 parameters");
+        tt::log_info(tt::LogOp, "Model {} with {} parameters", "test", 42);
+        soft_check_log_contains(sink.get(), "[Op] Model test with 42 parameters");
     }
 
     SECTION("Filesystem path formatting") {
         std::filesystem::path p = "/usr/bin/hello";
-        tt::log_info(tt::LogModel, "Path: {}", p);
-        soft_check_log_contains(sink.get(), "[Model] Path: /usr/bin/hello");
+        tt::log_info(tt::LogOp, "Path: {}", p);
+        soft_check_log_contains(sink.get(), "[Op] Path: /usr/bin/hello");
     }
 }
 
@@ -173,7 +173,7 @@ TEST_CASE("Log level filtering", "[logger]") {
 
 TEST_CASE("Log type to string mapping", "[logger]") {
     REQUIRE(std::string(tt::logtype_to_string(tt::LogDevice)) == "Device");
-    REQUIRE(std::string(tt::logtype_to_string(tt::LogModel)) == "Model");
+    REQUIRE(std::string(tt::logtype_to_string(tt::LogOp)) == "Op");
     REQUIRE(std::string(tt::logtype_to_string(tt::LogLLRuntime)) == "LLRuntime");
 }
 
@@ -198,7 +198,7 @@ TEST_CASE("File logging functionality", "[logger]") {
 
         // Write some test logs
         tt::log_info(tt::LogDevice, "Device file message");
-        tt::log_warning(tt::LogModel, "Model file warning");
+        tt::log_warning(tt::LogOp, "Model file warning");
         tt::log_error(tt::LogLLRuntime, "Runtime file error");
 
         // Flush and close the logger
@@ -212,7 +212,7 @@ TEST_CASE("File logging functionality", "[logger]") {
         std::string file_contents = buffer.str();
 
         REQUIRE(file_contents.find("[Device] Device file message") != std::string::npos);
-        REQUIRE(file_contents.find("[Model] Model file warning") != std::string::npos);
+        REQUIRE(file_contents.find("[Op] Model file warning") != std::string::npos);
         REQUIRE(file_contents.find("[LLRuntime] Runtime file error") != std::string::npos);
 
         // Clean up

@@ -84,14 +84,14 @@ cmake --install build
 int main() {
     // Log with different levels and categories
     tt::log_info(tt::LogDevice, "Device message");
-    tt::log_debug(tt::LogModel, "Model debug message");
+    tt::log_debug(tt::LogOp, "Op debug message");
     tt::log_warning(tt::LogLLRuntime, "Runtime warning");
     tt::log_error(tt::LogDevice, "Device error");
-    tt::log_critical(tt::LogModel, "Model critical error");
+    tt::log_critical(tt::LogOp, "Op critical error");
 
     // Log with format strings
     tt::log_info(tt::LogDevice, "Device {} message", 123);
-    tt::log_info(tt::LogModel, "Model {} with {} parameters", "test", 42);
+    tt::log_info(tt::LogOp, "Op {} with {} parameters", "test", 42);
 
     // Log with default category (LogAlways)
     tt::log_info("Default category message");
@@ -101,31 +101,26 @@ int main() {
 ```
 
 ## Available Categories
-To be refined
+The following log categories are available:
 
 - Always
 - Test
 - Timer
 - Device
-- Model
 - LLRuntime
 - Loader
-- IO
-- CompileTrisc
 - BuildKernels
 - Verif
-- Golden
 - Op
-- HLK
-- HLKC
-- Reportify
-- GraphCompiler
 - Dispatch
 - Fabric
 - Metal
+- TTNN
 - MetalTrace
 - SiliconDriver
 - EmulationDriver
+
+Each category is prefixed with "Log" when used in code (e.g., `tt::LogDevice`, `tt::LogOp`).
 
 ## CMake Integration
 
