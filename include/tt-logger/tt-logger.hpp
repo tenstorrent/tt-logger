@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <fmt/color.h>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
@@ -127,9 +128,12 @@ template <typename... Args> inline void log_error(fmt::format_string<Args...> fm
 
 // Custom formatter for LogType
 namespace fmt {
-template <> struct formatter<tt::LogType> : fmt::formatter<std::string_view> {
-    template <typename FormatContext> constexpr auto format(tt::LogType logtype, FormatContext & ctx) const {
-        return fmt::formatter<std::string_view>::format(tt::logtype_to_string(logtype), ctx);
+template <> struct formatter<tt::LogType> {
+    template <typename ParseContext> constexpr auto parse(ParseContext & ctx) { return ctx.begin(); }
+
+    template <typename FormatContext> auto format(tt::LogType logtype, FormatContext & ctx) const {
+        return fmt::format_to(ctx.out(), "{}",
+                              fmt::styled(tt::logtype_to_string(logtype), fmt::fg(fmt::color::light_sea_green)));
     }
 };
 }  // namespace fmt
