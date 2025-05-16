@@ -40,26 +40,24 @@ enum LogType {
 #define X(a) Log ## a,
     TT_LOGGER_TYPES
 #undef X
+    Count // Sentinel, representing number of log types
 };
 // clang-format on
 
-constexpr std::array<const char *, std::size_t(LogType::LogEmulationDriver) + 1> log_type_names = {
+constexpr std::array<const char *, static_cast<std::size_t>(LogType::Count)> log_type_names = {
 #define X(name) #name,
     TT_LOGGER_TYPES
 #undef X
 };
 
-constexpr const char * logtype_to_string(LogType logtype) noexcept {
-    return static_cast<std::size_t>(logtype) < log_type_names.size() ?
-               log_type_names[static_cast<std::size_t>(logtype)] :
-               "UnknownType";
+constexpr std::string_view logtype_to_string(LogType logtype) noexcept {
+    const auto index = static_cast<std::size_t>(logtype);
+    return index < static_cast<std::size_t>(LogType::Count) ? log_type_names[index] : "UnknownType";
 }
 
 // log_trace
 template <typename... Args> inline void log_trace(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    if (spdlog::should_log(spdlog::level::trace)) {
-        spdlog::trace("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
-    }
+    spdlog::trace("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
 }
 
 template <typename... Args> inline void log_trace(fmt::format_string<Args...> fmt, Args &&... args) {
@@ -68,9 +66,7 @@ template <typename... Args> inline void log_trace(fmt::format_string<Args...> fm
 
 // log_debug
 template <typename... Args> inline void log_debug(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    if (spdlog::should_log(spdlog::level::debug)) {
-        spdlog::debug("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
-    }
+    spdlog::debug("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
 }
 
 template <typename... Args> inline void log_debug(fmt::format_string<Args...> fmt, Args &&... args) {
