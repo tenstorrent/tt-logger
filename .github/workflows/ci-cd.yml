@@ -16,6 +16,8 @@ jobs:
 
     - name: Set up CMake
       uses: lukka/get-cmake@latest
+      with:
+        cmakeVersion: '3.22.1'
 
     - name: Build Project
       run: |
