@@ -100,6 +100,51 @@ int main() {
 }
 ```
 
+## Logger Initialization
+
+The `LoggerInitializer` class provides a convenient way to set up the logging system with either file-based or console-based logging. It supports configuration through environment variables.
+
+### Basic Usage
+
+```cpp
+#include <tt-logger/tt-logger-initializer.hpp>
+
+int main() {
+    // Initialize logger with default environment variables
+    tt::LoggerInitializer logger_init;
+
+    // Now you can use the logging functions
+    tt::log_info("Logger initialized");
+    return 0;
+}
+```
+
+### Environment Variables
+
+The `LoggerInitializer` can be configured using the following environment variables:
+
+- `TT_LOGGER_FILE`: Path to the log file. If not set or empty, logs will be written to stdout.
+- `TT_LOGGER_LEVEL`: Log level (trace, debug, info, warning, error, critical). Defaults to "info" if not set.
+
+Example:
+```bash
+# Log to a file with debug level
+export TT_LOGGER_FILE=/path/to/logfile.log
+export TT_LOGGER_LEVEL=debug
+
+# Log to stdout with warning level
+export TT_LOGGER_LEVEL=warning
+```
+
+### Custom Environment Variable Names
+
+You can also specify custom environment variable names when creating the initializer:
+
+```cpp
+// Use custom environment variable names
+tt::LoggerInitializer logger_init("CUSTOM_LOG_FILE", "CUSTOM_LOG_LEVEL");
+```
+
 ## Available Categories
 The following log categories are available:
 

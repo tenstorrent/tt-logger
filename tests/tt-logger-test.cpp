@@ -2,6 +2,20 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+/**
+ * @file tt-logger-test.cpp
+ * @brief Test suite for the tt-logger library
+ *
+ * This file contains comprehensive unit tests for the tt-logger library, including:
+ * - Basic logging functionality (info, debug, warning, error, critical)
+ * - Format string functionality with various argument types
+ * - Log level filtering and type mapping
+ * - File logging capabilities
+ * - Performance testing for logging operations
+ *
+ * The tests use Catch2 framework and include custom sink implementations for testing.
+ */
+
 #include <fmt/std.h>  // needed for filesystem::path formatting
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
