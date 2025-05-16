@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.14)
 project(tt-logger VERSION 1.0.0 LANGUAGES CXX)
+
+include(GNUInstallDirs)
 
 include(cmake/CPM.cmake)
 if(NOT TARGET fmt::fmt-header-only)
@@ -21,42 +23,65 @@ endif()
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-target_sources(
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.23)
+    target_sources(
+        ${PROJECT_NAME}
+        INTERFACE
+            FILE_SET api
+            TYPE HEADERS
+            BASE_DIRS ${CMAKE_INSTALL_INCLUDEDIR}
+            FILES ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/tt-logger.hpp
+    )
+endif()
+
+target_include_directories(
     ${PROJECT_NAME}
-    INTERFACE
-        FILE_SET api
-        TYPE HEADERS
-        BASE_DIRS include
-        FILES include/${PROJECT_NAME}/tt-logger.hpp
+    INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-target_include_directories(${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+if(CMAKE_VERSION VERSION_LESS 3.23)
+    target_include_directories(
+        ${PROJECT_NAME}
+        INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
+endif()
 
 target_link_libraries(
     ${PROJECT_NAME}
-    INTERFACE
-        spdlog::spdlog_header_only
-        fmt::fmt-header-only
+    INTERFACE spdlog::spdlog_header_only fmt::fmt-header-only
 )
 
 option(TT_LOGGER_INSTALL "Configure for installation" OFF)
+
 if(TT_LOGGER_INSTALL)
-    install(
-        TARGETS
-            ${PROJECT_NAME}
-        EXPORT ${PROJECT_NAME}-targets
-        FILE_SET
-        api
-            DESTINATION include
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.23)
+        install(
+            TARGETS ${PROJECT_NAME}
+            EXPORT ${PROJECT_NAME}-targets
+            FILE_SET api
+                DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+                COMPONENT ${PROJECT_NAME}-dev
+        )
+    else()
+        install(
+            TARGETS ${PROJECT_NAME}
+            EXPORT ${PROJECT_NAME}-targets
+            COMPONENT
+            ${PROJECT_NAME}-dev
+        )
+        install(
+            DIRECTORY include/
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             COMPONENT ${PROJECT_NAME}-dev
-    )
+        )
+    endif()
 
     # Install export file
     install(
         EXPORT ${PROJECT_NAME}-targets
         FILE ${PROJECT_NAME}-targets.cmake
         NAMESPACE ${PROJECT_NAME}::
-        DESTINATION lib/cmake/${PROJECT_NAME}
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
         COMPONENT ${PROJECT_NAME}-dev
     )
 
@@ -71,14 +96,14 @@ if(TT_LOGGER_INSTALL)
     configure_package_config_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}-config.cmake"
-        INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
 
     install(
         FILES
             "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}-config.cmake"
             "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}-config-version.cmake"
-        DESTINATION lib/cmake/${PROJECT_NAME}
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
         COMPONENT ${PROJECT_NAME}-dev
     )
 endif()
