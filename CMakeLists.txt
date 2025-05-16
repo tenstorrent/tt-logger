@@ -5,11 +5,11 @@ include(GNUInstallDirs)
 
 include(cmake/CPM.cmake)
 if(NOT TARGET fmt::fmt-header-only)
-    CPMAddPackage(NAME fmt GITHUB_REPOSITORY fmtlib/fmt GIT_TAG 11.1.4)
+    cpmaddpackage(NAME fmt GITHUB_REPOSITORY fmtlib/fmt GIT_TAG 11.1.4)
 endif()
 
 if(NOT TARGET spdlog::spdlog_header_only)
-    CPMAddPackage(
+    cpmaddpackage(
         NAME spdlog
         GITHUB_REPOSITORY gabime/spdlog
         VERSION 1.15.2
@@ -30,7 +30,9 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.23)
             FILE_SET api
             TYPE HEADERS
             BASE_DIRS ${CMAKE_INSTALL_INCLUDEDIR}
-            FILES ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/tt-logger.hpp
+            FILES
+                ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/tt-logger.hpp
+                ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/tt-logger-initializer.hpp
     )
 endif()
 
