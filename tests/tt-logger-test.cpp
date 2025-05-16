@@ -7,13 +7,15 @@
 #include <spdlog/sinks/basic_file_sink.h>
 
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <tt-logger/tt-logger.hpp>
 
-//#define TT_LOGGER_TESTING
+#define TT_LOGGER_TESTING
 
 // Custom sink to capture log output when TT_LOGGER_TESTING is defined
 #ifdef TT_LOGGER_TESTING
@@ -219,3 +221,77 @@ TEST_CASE("File logging functionality", "[logger]") {
         std::filesystem::remove(temp_log_file);
     }
 }
+
+#ifdef TT_LOGGER_TESTING
+TEST_CASE("Performance testing", "[logger]") {
+    constexpr int num_iterations = 10000;  // Reduced iterations for testing
+
+    SECTION("log_info performance") {
+        try {
+            auto sink = setup_logger();
+            REQUIRE(sink != nullptr);
+
+            auto logger = spdlog::default_logger();
+            REQUIRE(logger != nullptr);
+
+            logger->set_level(spdlog::level::info);
+
+            // Test a single log first to verify setup
+            tt::log_info(tt::LogDevice, "Test setup message");
+
+            auto start = std::chrono::high_resolution_clock::now();
+
+            for (int i = 0; i < num_iterations; ++i) {
+                tt::log_info(tt::LogDevice, "Performance test message {}", i);
+            }
+
+            auto end      = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+            double avg_time_per_log = static_cast<double>(duration.count()) / num_iterations;
+            std::cout << "Average time per log_info call: " << avg_time_per_log << " microseconds\n";
+
+            REQUIRE(duration.count() > 0);
+
+            // Cleanup
+            spdlog::drop_all();
+        } catch (const std::exception & e) {
+            FAIL("Exception in log_info performance test: " << e.what());
+        }
+    }
+
+    SECTION("log_debug performance when level is info") {
+        try {
+            auto sink = setup_logger();
+            REQUIRE(sink != nullptr);
+
+            auto logger = spdlog::default_logger();
+            REQUIRE(logger != nullptr);
+
+            logger->set_level(spdlog::level::info);
+
+            // Test a single log first to verify setup
+            tt::log_debug(tt::LogOp, "Test setup message");
+
+            auto start = std::chrono::high_resolution_clock::now();
+
+            for (int i = 0; i < num_iterations; ++i) {
+                tt::log_debug(tt::LogOp, "Debug performance test message {}", i);
+            }
+
+            auto end      = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+            double avg_time_per_log = static_cast<double>(duration.count()) / num_iterations;
+            std::cout << "Average time per log_debug call: " << avg_time_per_log << " microseconds\n";
+
+            REQUIRE(duration.count() > 0);
+
+            // Cleanup
+            spdlog::drop_all();
+        } catch (const std::exception & e) {
+            FAIL("Exception in log_debug performance test: " << e.what());
+        }
+    }
+}
+#endif
