@@ -15,7 +15,11 @@
 using namespace tt;
 
 // Static logger initialization
-static LoggerInitializer _logger("TT_METAL_LOGGER_FILE", "TT_METAL_LOGGER_LEVEL");
+constexpr auto env_file_var  = "TT_METAL_LOGGER_FILE";
+constexpr auto env_level_var = "TT_METAL_LOGGER_LEVEL";
+constexpr auto log_pattern   = "[%Y-%m-%d %H:%M:%S.%e] [%l] [%s:%#] %v";
+
+static LoggerInitializer _logger(env_file_var, env_level_var, log_pattern);
 
 int main() {
     // Test using tt-logger macros

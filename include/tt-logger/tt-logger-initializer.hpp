@@ -45,9 +45,12 @@ class LoggerInitializer {
         return sink;
     }
 
-    void configure_logger(std::shared_ptr<spdlog::sinks::sink> sink) {
+    void configure_logger(std::shared_ptr<spdlog::sinks::sink> sink, const std::string & pattern) {
         auto logger = std::make_shared<spdlog::logger>("", sink);
         spdlog::set_default_logger(logger);
+        if (!pattern.empty()) {
+            spdlog::set_pattern(pattern);
+        }
         spdlog::flush_on(spdlog::level::err);
     }
 
@@ -57,11 +60,13 @@ class LoggerInitializer {
      *
      * @param file_env Environment variable name for log file path
      * @param level_env Environment variable name for log level
+     * @param pattern The pattern string to use for log formatting
      */
-    LoggerInitializer(std::string file_env = "TT_LOGGER_FILE", std::string level_env = "TT_LOGGER_LEVEL") noexcept {
+    LoggerInitializer(std::string file_env = "TT_LOGGER_FILE", std::string level_env = "TT_LOGGER_LEVEL",
+                      std::string pattern = "") noexcept {
         const char * file_path = std::getenv(file_env.c_str());
         auto         sink      = create_sink(file_path ? file_path : "");
-        configure_logger(sink);
+        configure_logger(sink, pattern);
         spdlog::cfg::load_env_levels(level_env.c_str());  // Defaults to "info" if no ENV var set
     }
 };
