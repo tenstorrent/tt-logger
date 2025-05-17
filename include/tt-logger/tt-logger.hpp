@@ -88,8 +88,7 @@ constexpr const char * logtype_to_string(LogType logtype) noexcept {
  */
 template <typename... Args> inline void log_trace(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
     if (spdlog::should_log(spdlog::level::trace)) {
-        spdlog::log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::trace, "[{}] {}", type,
-                    fmt::format(fmt, std::forward<Args>(args)...));
+        spdlog::trace("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
     }
 }
 
@@ -114,8 +113,7 @@ template <typename... Args> inline void log_trace(fmt::format_string<Args...> fm
  */
 template <typename... Args> inline void log_debug(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
     if (spdlog::should_log(spdlog::level::debug)) {
-        spdlog::log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::debug, "[{}] {}", type,
-                    fmt::format(fmt, std::forward<Args>(args)...));
+        spdlog::debug("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
     }
 }
 
@@ -139,8 +137,7 @@ template <typename... Args> inline void log_debug(fmt::format_string<Args...> fm
  * @param args The format arguments
  */
 template <typename... Args> inline void log_info(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    spdlog::log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::info, "[{}] {}", type,
-                fmt::format(fmt, std::forward<Args>(args)...));
+    spdlog::info("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
 }
 
 /**
@@ -163,8 +160,7 @@ template <typename... Args> inline void log_info(fmt::format_string<Args...> fmt
  * @param args The format arguments
  */
 template <typename... Args> inline void log_warning(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    spdlog::log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::warn, "[{}] {}", type,
-                fmt::format(fmt, std::forward<Args>(args)...));
+    spdlog::warn("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
 }
 
 /**
@@ -187,8 +183,7 @@ template <typename... Args> inline void log_warning(fmt::format_string<Args...> 
  * @param args The format arguments
  */
 template <typename... Args> inline void log_critical(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    spdlog::log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::critical, "[{}] {}", type,
-                fmt::format(fmt, std::forward<Args>(args)...));
+    spdlog::critical("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
 }
 
 /**
@@ -211,8 +206,7 @@ template <typename... Args> inline void log_critical(fmt::format_string<Args...>
  * @param args The format arguments
  */
 template <typename... Args> inline void log_fatal(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    spdlog::log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::critical, "[{}] {}", type,
-                fmt::format(fmt, std::forward<Args>(args)...));
+    spdlog::critical("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
 }
 
 /**
@@ -235,8 +229,7 @@ template <typename... Args> inline void log_fatal(fmt::format_string<Args...> fm
  * @param args The format arguments
  */
 template <typename... Args> inline void log_error(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    spdlog::log(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::err, "[{}] {}", type,
-                fmt::format(fmt, std::forward<Args>(args)...));
+    spdlog::error("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
 }
 
 /**
