@@ -78,19 +78,19 @@ constexpr const char * logtype_to_string(LogType logtype) noexcept {
                "UnknownType";
 }
 
-template <typename... Args> struct log_impl {
-    template <typename... T>
-    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level, LogType type,
-             fmt::format_string<T...> fmt, T &&... args) {
+struct log_impl {
+    template <typename... Args>
+    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level, tt::LogType type,
+             fmt::format_string<Args...> fmt, Args &&... args) {
         if (spdlog::should_log(level)) {
-            spdlog::log(loc, level, "[{}] {}", type, fmt::format(fmt, std::forward<T>(args)...));
+            spdlog::log(loc, level, "[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
         }
     }
 
-    template <typename... T>
-    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level, fmt::format_string<T...> fmt,
-             T &&... args) :
-        log_impl(loc, level, LogType::LogAlways, fmt, std::forward<T>(args)...) {}
+    template <typename... Args>
+    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level, fmt::format_string<Args...> fmt,
+             Args &&... args) :
+        log_impl(loc, level, tt::LogType::LogAlways, fmt, std::forward<Args>(args)...) {}
 };
 
 }  // namespace tt
