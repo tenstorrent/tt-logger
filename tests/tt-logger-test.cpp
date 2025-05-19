@@ -126,6 +126,16 @@ TEST_CASE("Basic logging functionality", "[logger]") {
         tt::log_critical(tt::LogOp, "Model critical error");
         soft_check_log_contains(sink.get(), "[Op] Model critical error");
     }
+
+    SECTION("Empty log_info") {
+        tt::log_info();
+        soft_check_log_contains(sink.get(), "");  // Should not log anything
+    }
+
+    SECTION("LogType only") {
+        tt::log_info(tt::LogMetal);
+        soft_check_log_contains(sink.get(), "[Metal]");  // Should log just the type without trailing space
+    }
 }
 
 TEST_CASE("Format string functionality", "[logger]") {

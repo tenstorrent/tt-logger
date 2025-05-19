@@ -1,6 +1,26 @@
 cmake_minimum_required(VERSION 3.14)
 project(tt-logger VERSION 1.0.2 LANGUAGES CXX)
 
+# Set default C++17 when building tests, otherwise verify requirement
+if(TT_LOGGER_BUILD_TESTING AND NOT DEFINED CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+endif()
+
+# Verify C++17 requirement since we use CTAD
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+    message(
+        FATAL_ERROR
+        "tt-logger requires C++17, but CMAKE_CXX_STANDARD is not set"
+    )
+elseif(CMAKE_CXX_STANDARD LESS 17)
+    message(
+        FATAL_ERROR
+        "tt-logger requires at least C++17, but C++${CMAKE_CXX_STANDARD} was specified"
+    )
+endif()
+
 include(GNUInstallDirs)
 
 include(cmake/CPM.cmake)
