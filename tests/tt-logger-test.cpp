@@ -97,34 +97,44 @@ TEST_CASE("Basic logging functionality", "[logger]") {
     auto sink = setup_logger();
 
     SECTION("String literal") {
-        tt::log_info("This is a string literal");
+        log_info("This is a string literal");
         soft_check_log_contains(sink.get(), "[Always] This is a string literal");
     }
 
     SECTION("Info") {
-        tt::log_info(tt::LogDevice, "Device message");
+        log_info(tt::LogDevice, "Device message");
         soft_check_log_contains(sink.get(), "[Device] Device message");
     }
 
     SECTION("Debug") {
         spdlog::default_logger()->set_level(spdlog::level::debug);
-        tt::log_debug(tt::LogOp, "Model debug message");
+        log_debug(tt::LogOp, "Model debug message");
         soft_check_log_contains(sink.get(), "[Op] Model debug message");
     }
 
     SECTION("Warning") {
-        tt::log_warning(tt::LogLLRuntime, "Runtime warning");
+        log_warning(tt::LogLLRuntime, "Runtime warning");
         soft_check_log_contains(sink.get(), "[LLRuntime] Runtime warning");
     }
 
     SECTION("Error") {
-        tt::log_error(tt::LogDevice, "Device error");
+        log_error(tt::LogDevice, "Device error");
         soft_check_log_contains(sink.get(), "[Device] Device error");
     }
 
     SECTION("Critical") {
-        tt::log_critical(tt::LogOp, "Model critical error");
+        log_critical(tt::LogOp, "Model critical error");
         soft_check_log_contains(sink.get(), "[Op] Model critical error");
+    }
+
+    SECTION("Empty log_info") {
+        log_info();
+        soft_check_log_contains(sink.get(), "");  // Should not log anything
+    }
+
+    SECTION("LogType only") {
+        log_info(tt::LogMetal);
+        soft_check_log_contains(sink.get(), "[Metal]");  // Should log just the type without trailing space
     }
 }
 
@@ -132,18 +142,18 @@ TEST_CASE("Format string functionality", "[logger]") {
     auto sink = setup_logger();
 
     SECTION("Single argument") {
-        tt::log_info(tt::LogDevice, "Device {} message", 123);
+        log_info(tt::LogDevice, "Device {} message", 123);
         soft_check_log_contains(sink.get(), "[Device] Device 123 message");
     }
 
     SECTION("Multiple arguments") {
-        tt::log_info(tt::LogOp, "Model {} with {} parameters", "test", 42);
+        log_info(tt::LogOp, "Model {} with {} parameters", "test", 42);
         soft_check_log_contains(sink.get(), "[Op] Model test with 42 parameters");
     }
 
     SECTION("Filesystem path formatting") {
         std::filesystem::path p = "/usr/bin/hello";
-        tt::log_info(tt::LogOp, "Path: {}", p);
+        log_info(tt::LogOp, "Path: {}", p);
         soft_check_log_contains(sink.get(), "[Op] Path: /usr/bin/hello");
     }
 }
@@ -155,8 +165,8 @@ TEST_CASE("Log level filtering", "[logger]") {
     SECTION("Debug filtering") {
         logger->set_level(spdlog::level::debug);
 
-        tt::log_trace(tt::LogDevice, "Should not appear");
-        tt::log_debug(tt::LogDevice, "Should appear");
+        log_trace(tt::LogDevice, "Should not appear");
+        log_debug(tt::LogDevice, "Should appear");
 
 #ifdef TT_LOGGER_TESTING
         auto output = get_output(sink.get());
@@ -172,8 +182,8 @@ TEST_CASE("Log level filtering", "[logger]") {
     SECTION("Info filtering") {
         logger->set_level(spdlog::level::info);
 
-        tt::log_debug(tt::LogDevice, "Should not appear");
-        tt::log_info(tt::LogDevice, "Should appear");
+        log_debug(tt::LogDevice, "Should not appear");
+        log_info(tt::LogDevice, "Should appear");
 
 #ifdef TT_LOGGER_TESTING
         auto output = get_output(sink.get());
@@ -197,7 +207,7 @@ TEST_CASE("Default log type behavior", "[logger]") {
     auto sink = setup_logger();
 
     SECTION("Defaults to LogAlways") {
-        tt::log_info("Default type message");
+        log_info("Default type message");
         soft_check_log_contains(sink.get(), "[Always] Default type message");
     }
 }
@@ -213,9 +223,9 @@ TEST_CASE("File logging functionality", "[logger]") {
         spdlog::set_default_logger(logger);
 
         // Write some test logs
-        tt::log_info(tt::LogDevice, "Device file message");
-        tt::log_warning(tt::LogOp, "Model file warning");
-        tt::log_error(tt::LogLLRuntime, "Runtime file error");
+        log_info(tt::LogDevice, "Device file message");
+        log_warning(tt::LogOp, "Model file warning");
+        log_error(tt::LogLLRuntime, "Runtime file error");
 
         // Flush and close the logger
         logger->flush();
@@ -251,12 +261,12 @@ TEST_CASE("Performance testing", "[logger]") {
             logger->set_level(spdlog::level::info);
 
             // Test a single log first to verify setup
-            tt::log_info(tt::LogDevice, "Test setup message");
+            log_info(tt::LogDevice, "Test setup message");
 
             auto start = std::chrono::high_resolution_clock::now();
 
             for (int i = 0; i < num_iterations; ++i) {
-                tt::log_info(tt::LogDevice, "Performance test message {}", i);
+                log_info(tt::LogDevice, "Performance test message {}", i);
             }
 
             auto end      = std::chrono::high_resolution_clock::now();
@@ -285,12 +295,12 @@ TEST_CASE("Performance testing", "[logger]") {
             logger->set_level(spdlog::level::info);
 
             // Test a single log first to verify setup
-            tt::log_debug(tt::LogOp, "Test setup message");
+            log_debug(tt::LogOp, "Test setup message");
 
             auto start = std::chrono::high_resolution_clock::now();
 
             for (int i = 0; i < num_iterations; ++i) {
-                tt::log_debug(tt::LogOp, "Debug performance test message {}", i);
+                log_debug(tt::LogOp, "Debug performance test message {}", i);
             }
 
             auto end      = std::chrono::high_resolution_clock::now();

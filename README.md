@@ -12,6 +12,7 @@ A flexible and performant C++ logging library for Tenstorrent projects.
 - Optional category specification, defaults to `LogAlways`.
 - Efficient logging: Formatting cost is avoided for `trace` and `debug` messages if the level is disabled.
 - Header-only library for easy integration.
+- Macro-based implementation for automatic source location tracking.
 - Logging behavior can be customized, just as you would customize the default logger in spdlog.
 
 ## Log levels
@@ -83,22 +84,27 @@ cmake --install build
 
 int main() {
     // Log with different levels and categories
-    tt::log_info(tt::LogDevice, "Device message");
-    tt::log_debug(tt::LogOp, "Op debug message");
-    tt::log_warning(tt::LogLLRuntime, "Runtime warning");
-    tt::log_error(tt::LogDevice, "Device error");
-    tt::log_critical(tt::LogOp, "Op critical error");
+    log_info(tt::LogDevice, "Device message");
+    log_debug(tt::LogOp, "Op debug message");
+    log_warning(tt::LogLLRuntime, "Runtime warning");
+    log_error(tt::LogDevice, "Device error");
+    log_critical(tt::LogOp, "Op critical error");
 
     // Log with format strings
-    tt::log_info(tt::LogDevice, "Device {} message", 123);
-    tt::log_info(tt::LogOp, "Op {} with {} parameters", "test", 42);
+    log_info(tt::LogDevice, "Device {} message", 123);
+    log_info(tt::LogOp, "Op {} with {} parameters", "test", 42);
 
     // Log with default category (LogAlways)
-    tt::log_info("Default category message");
+    log_info("Default category message");
+
+    // Log with source location automatically included
+    log_error(tt::LogDevice, "Error occurred in function: {}", __func__);
 
     return 0;
 }
 ```
+
+The logging macros automatically include source location information (file, line number, and function name) in the log output. This is handled transparently by the macro implementation.
 
 ## Logger Initialization
 

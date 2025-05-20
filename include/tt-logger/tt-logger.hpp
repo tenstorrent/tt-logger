@@ -79,169 +79,67 @@ constexpr const char * logtype_to_string(LogType logtype) noexcept {
 }
 
 /**
- * @brief Logs a trace level message with a specific log type.
+ * @brief Implementation struct for logging functionality.
  *
- * @tparam Args Variadic template parameter for format arguments
- * @param type The log type/category
- * @param fmt The format string
- * @param args The format arguments
+ * This struct provides the core implementation for logging with support for different log levels,
+ * log types, and formatted string output. It uses spdlog for the underlying logging mechanism.
  */
-template <typename... Args> inline void log_trace(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    if (spdlog::should_log(spdlog::level::trace)) {
-        spdlog::trace("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
+struct log_impl {
+    /**
+     * @brief Constructor for logging with a specific log type.
+     *
+     * @tparam Args Variadic template parameter for format arguments
+     * @param loc Source location information (file, line, function)
+     * @param level The log level (trace, debug, info, etc.)
+     * @param type The specific log type/category
+     * @param fmt Format string for the log message
+     * @param args Variadic arguments to be formatted into the message
+     */
+    template <typename... Args>
+    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level, tt::LogType type,
+             fmt::format_string<Args...> fmt, Args &&... args) {
+        if (spdlog::should_log(level)) {
+            spdlog::log(loc, level, "[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
+        }
     }
-}
 
-/**
- * @brief Logs a trace level message with default LogAlways type.
- *
- * @tparam Args Variadic template parameter for format arguments
- * @param fmt The format string
- * @param args The format arguments
- */
-template <typename... Args> inline void log_trace(fmt::format_string<Args...> fmt, Args &&... args) {
-    log_trace(LogType::LogAlways, fmt, std::forward<Args>(args)...);
-}
+    /**
+     * @brief Constructor for logging without a specific log type (uses LogAlways as default).
+     *
+     * @tparam Args Variadic template parameter for format arguments
+     * @param loc Source location information (file, line, function)
+     * @param level The log level (trace, debug, info, etc.)
+     * @param fmt Format string for the log message
+     * @param args Variadic arguments to be formatted into the message
+     */
+    template <typename... Args>
+    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level, fmt::format_string<Args...> fmt,
+             Args &&... args) :
+        log_impl(loc, level, tt::LogType::LogAlways, fmt, std::forward<Args>(args)...) {}
 
-/**
- * @brief Logs a debug level message with a specific log type.
- *
- * @tparam Args Variadic template parameter for format arguments
- * @param type The log type/category
- * @param fmt The format string
- * @param args The format arguments
- */
-template <typename... Args> inline void log_debug(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    if (spdlog::should_log(spdlog::level::debug)) {
-        spdlog::debug("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
+    /**
+     * @brief Constructor for empty logging (no message).
+     *
+     * @param loc Source location information (file, line, function)
+     * @param level The log level (trace, debug, info, etc.)
+     */
+    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level) {
+        // Empty constructor - no logging
     }
-}
 
-/**
- * @brief Logs a debug level message with default LogAlways type.
- *
- * @tparam Args Variadic template parameter for format arguments
- * @param fmt The format string
- * @param args The format arguments
- */
-template <typename... Args> inline void log_debug(fmt::format_string<Args...> fmt, Args &&... args) {
-    log_debug(LogType::LogAlways, fmt, std::forward<Args>(args)...);
-}
-
-/**
- * @brief Logs an info level message with a specific log type.
- *
- * @tparam Args Variadic template parameter for format arguments
- * @param type The log type/category
- * @param fmt The format string
- * @param args The format arguments
- */
-template <typename... Args> inline void log_info(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    spdlog::info("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
-}
-
-/**
- * @brief Logs an info level message with default LogAlways type.
- *
- * @tparam Args Variadic template parameter for format arguments
- * @param fmt The format string
- * @param args The format arguments
- */
-template <typename... Args> inline void log_info(fmt::format_string<Args...> fmt, Args &&... args) {
-    log_info(LogType::LogAlways, fmt, std::forward<Args>(args)...);
-}
-
-/**
- * @brief Logs a warning level message with a specific log type.
- *
- * @tparam Args Variadic template parameter for format arguments
- * @param type The log type/category
- * @param fmt The format string
- * @param args The format arguments
- */
-template <typename... Args> inline void log_warning(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    spdlog::warn("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
-}
-
-/**
- * @brief Logs a warning level message with default LogAlways type.
- *
- * @tparam Args Variadic template parameter for format arguments
- * @param fmt The format string
- * @param args The format arguments
- */
-template <typename... Args> inline void log_warning(fmt::format_string<Args...> fmt, Args &&... args) {
-    log_warning(LogType::LogAlways, fmt, std::forward<Args>(args)...);
-}
-
-/**
- * @brief Logs a critical level message with a specific log type.
- *
- * @tparam Args Variadic template parameter for format arguments
- * @param type The log type/category
- * @param fmt The format string
- * @param args The format arguments
- */
-template <typename... Args> inline void log_critical(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    spdlog::critical("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
-}
-
-/**
- * @brief Logs a critical level message with default LogAlways type.
- *
- * @tparam Args Variadic template parameter for format arguments
- * @param fmt The format string
- * @param args The format arguments
- */
-template <typename... Args> inline void log_critical(fmt::format_string<Args...> fmt, Args &&... args) {
-    log_critical(LogType::LogAlways, fmt, std::forward<Args>(args)...);
-}
-
-/**
- * @brief Logs a fatal level message with a specific log type.
- *
- * @tparam Args Variadic template parameter for format arguments
- * @param type The log type/category
- * @param fmt The format string
- * @param args The format arguments
- */
-template <typename... Args> inline void log_fatal(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    spdlog::critical("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
-}
-
-/**
- * @brief Logs a fatal level message with default LogAlways type.
- *
- * @tparam Args Variadic template parameter for format arguments
- * @param fmt The format string
- * @param args The format arguments
- */
-template <typename... Args> inline void log_fatal(fmt::format_string<Args...> fmt, Args &&... args) {
-    log_fatal(LogType::LogAlways, fmt, std::forward<Args>(args)...);
-}
-
-/**
- * @brief Logs an error level message with a specific log type.
- *
- * @tparam Args Variadic template parameter for format arguments
- * @param type The log type/category
- * @param fmt The format string
- * @param args The format arguments
- */
-template <typename... Args> inline void log_error(LogType type, fmt::format_string<Args...> fmt, Args &&... args) {
-    spdlog::error("[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
-}
-
-/**
- * @brief Logs an error level message with default LogAlways type.
- *
- * @tparam Args Variadic template parameter for format arguments
- * @param fmt The format string
- * @param args The format arguments
- */
-template <typename... Args> inline void log_error(fmt::format_string<Args...> fmt, Args &&... args) {
-    log_error(LogType::LogAlways, fmt, std::forward<Args>(args)...);
-}
+    /**
+     * @brief Constructor for logging with only a log type.
+     *
+     * @param loc Source location information (file, line, function)
+     * @param level The log level (trace, debug, info, etc.)
+     * @param type The specific log type/category
+     */
+    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level, tt::LogType type) {
+        if (spdlog::should_log(level)) {
+            spdlog::log(loc, level, "[{}]", type);
+        }
+    }
+};
 
 }  // namespace tt
 
@@ -256,3 +154,95 @@ template <> struct formatter<tt::LogType> : fmt::formatter<std::string_view> {
 };
 }  // namespace fmt
 #undef TT_LOGGER_TYPES
+
+/**
+ * @def log_trace(...)
+ * @brief Log a message at trace level.
+ *
+ * This macro logs a message with the lowest severity level, typically used for detailed
+ * debugging information. The message will include source file, line number, and function name.
+ *
+ * @param ... Format string and arguments to be logged
+ * @see log_impl
+ */
+#define log_trace(...) \
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::trace, ##__VA_ARGS__)
+
+/**
+ * @def log_debug(...)
+ * @brief Log a message at debug level.
+ *
+ * This macro logs a message at debug level, used for debugging information that is
+ * more important than trace but less critical than info level.
+ *
+ * @param ... Format string and arguments to be logged
+ * @see log_impl
+ */
+#define log_debug(...) \
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::debug, ##__VA_ARGS__)
+
+/**
+ * @def log_info(...)
+ * @brief Log a message at info level.
+ *
+ * This macro logs a message at info level, used for general informational messages
+ * about program execution.
+ *
+ * @param ... Format string and arguments to be logged
+ * @see log_impl
+ */
+#define log_info(...) \
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::info, ##__VA_ARGS__)
+
+/**
+ * @def log_warning(...)
+ * @brief Log a message at warning level.
+ *
+ * This macro logs a message at warning level, used for potentially harmful situations
+ * that don't prevent program execution.
+ *
+ * @param ... Format string and arguments to be logged
+ * @see log_impl
+ */
+#define log_warning(...) \
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::warn, ##__VA_ARGS__)
+
+/**
+ * @def log_error(...)
+ * @brief Log a message at error level.
+ *
+ * This macro logs a message at error level, used for error events that might still
+ * allow the program to continue running.
+ *
+ * @param ... Format string and arguments to be logged
+ * @see log_impl
+ */
+#define log_error(...) \
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::err, ##__VA_ARGS__)
+
+/**
+ * @def log_critical(...)
+ * @brief Log a message at critical level.
+ *
+ * This macro logs a message at critical level, used for very severe error events
+ * that will likely lead to program termination.
+ *
+ * @param ... Format string and arguments to be logged
+ * @see log_impl
+ */
+#define log_critical(...) \
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::critical, ##__VA_ARGS__)
+
+/**
+ * @def log_fatal(...)
+ * @brief Log a message at fatal level (alias for critical).
+ *
+ * This macro is an alias for log_critical, used for fatal errors that will
+ * lead to program termination.
+ *
+ * @param ... Format string and arguments to be logged
+ * @see log_impl
+ * @see log_critical
+ */
+#define log_fatal(...) \
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::critical, ##__VA_ARGS__)
