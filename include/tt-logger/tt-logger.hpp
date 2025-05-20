@@ -116,6 +116,29 @@ struct log_impl {
     log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level, fmt::format_string<Args...> fmt,
              Args &&... args) :
         log_impl(loc, level, tt::LogType::LogAlways, fmt, std::forward<Args>(args)...) {}
+
+    /**
+     * @brief Constructor for empty logging (no message).
+     *
+     * @param loc Source location information (file, line, function)
+     * @param level The log level (trace, debug, info, etc.)
+     */
+    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level) {
+        // Empty constructor - no logging
+    }
+
+    /**
+     * @brief Constructor for logging with only a log type.
+     *
+     * @param loc Source location information (file, line, function)
+     * @param level The log level (trace, debug, info, etc.)
+     * @param type The specific log type/category
+     */
+    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level, tt::LogType type) {
+        if (spdlog::should_log(level)) {
+            spdlog::log(loc, level, "[{}]", type);
+        }
+    }
 };
 
 }  // namespace tt
@@ -143,7 +166,7 @@ template <> struct formatter<tt::LogType> : fmt::formatter<std::string_view> {
  * @see log_impl
  */
 #define log_trace(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::trace, __VA_ARGS__)
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::trace, ##__VA_ARGS__)
 
 /**
  * @def log_debug(...)
@@ -156,7 +179,7 @@ template <> struct formatter<tt::LogType> : fmt::formatter<std::string_view> {
  * @see log_impl
  */
 #define log_debug(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::debug, __VA_ARGS__)
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::debug, ##__VA_ARGS__)
 
 /**
  * @def log_info(...)
@@ -169,7 +192,7 @@ template <> struct formatter<tt::LogType> : fmt::formatter<std::string_view> {
  * @see log_impl
  */
 #define log_info(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::info, __VA_ARGS__)
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::info, ##__VA_ARGS__)
 
 /**
  * @def log_warning(...)
@@ -182,7 +205,7 @@ template <> struct formatter<tt::LogType> : fmt::formatter<std::string_view> {
  * @see log_impl
  */
 #define log_warning(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::warn, __VA_ARGS__)
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::warn, ##__VA_ARGS__)
 
 /**
  * @def log_error(...)
@@ -195,7 +218,7 @@ template <> struct formatter<tt::LogType> : fmt::formatter<std::string_view> {
  * @see log_impl
  */
 #define log_error(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::err, __VA_ARGS__)
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::err, ##__VA_ARGS__)
 
 /**
  * @def log_critical(...)
@@ -208,7 +231,7 @@ template <> struct formatter<tt::LogType> : fmt::formatter<std::string_view> {
  * @see log_impl
  */
 #define log_critical(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::critical, __VA_ARGS__)
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::critical, ##__VA_ARGS__)
 
 /**
  * @def log_fatal(...)
@@ -222,4 +245,4 @@ template <> struct formatter<tt::LogType> : fmt::formatter<std::string_view> {
  * @see log_critical
  */
 #define log_fatal(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::critical, __VA_ARGS__)
+    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::critical, ##__VA_ARGS__)
