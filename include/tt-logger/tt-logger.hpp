@@ -99,7 +99,7 @@ struct log_impl {
     log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level, tt::LogType type,
              fmt::format_string<Args...> fmt, Args &&... args) {
         if (spdlog::should_log(level)) {
-            spdlog::log(loc, level, "[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
+            spdlog::log(loc, level, "[{}] {}", type, fmt, std::forward<Args>(args)...);
         }
     }
 
