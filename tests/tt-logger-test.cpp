@@ -16,18 +16,22 @@
  * The tests use Catch2 framework and include custom sink implementations for testing.
  */
 
-#include <fmt/std.h>  // needed for filesystem::path formatting
+#include <fmt/ranges.h>  // needed for container formatting
+#include <fmt/std.h>     // needed for filesystem::path formatting
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <string>
 #include <tt-logger/tt-logger.hpp>
+#include <vector>
 
 #define TT_LOGGER_TESTING
 
@@ -155,6 +159,39 @@ TEST_CASE("Format string functionality", "[logger]") {
         std::filesystem::path p = "/usr/bin/hello";
         log_info(tt::LogOp, "Path: {}", p);
         soft_check_log_contains(sink.get(), "[Op] Path: /usr/bin/hello");
+    }
+
+    SECTION("Multiple complex arguments") {
+        using chip_id_t                     = int;                    // Assuming chip_id_t is an integer type
+        std::set<chip_id_t> local_chip_ids  = { 1, 2, 3 };
+        std::vector<int>    pci_ids         = { 4096, 8192, 12288 };  // Example PCI IDs in decimal
+        std::set<chip_id_t> remote_chip_ids = { 4, 5, 6 };
+
+        log_info(tt::LogSiliconDriver, "Opening local chip ids/pci ids: {}/{} and remote chip ids {}", local_chip_ids,
+                 pci_ids, remote_chip_ids);
+
+        // The actual log output includes timestamp, logger name, and line number
+        soft_check_log_contains(sink.get(),
+                                "[SiliconDriver] Opening local chip ids/pci ids: {1, 2, 3}/[4096, 8192, 12288] and "
+                                "remote chip ids {4, 5, 6}");
+    }
+
+    SECTION("Format string error cases") {
+        SECTION("Missing argument") {
+            // Should throw an exception for missing argument
+            REQUIRE_THROWS_AS(log_info(tt::LogDevice, "Missing argument: {} {}", 1), std::runtime_error);
+        }
+
+        SECTION("Invalid format specifier") {
+            // Should throw an exception for invalid format specifier
+            REQUIRE_THROWS_AS(log_info(tt::LogDevice, "Invalid format: {invalid}"), std::runtime_error);
+        }
+
+        SECTION("Empty format string with arguments") {
+            // Empty format string should work fine, extra arguments are ignored
+            log_info(tt::LogDevice, "", 1, 2, 3);
+            soft_check_log_contains(sink.get(), "[Device] ");
+        }
     }
 }
 
