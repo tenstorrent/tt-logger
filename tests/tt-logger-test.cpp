@@ -171,7 +171,6 @@ TEST_CASE("Log level filtering", "[logger]") {
 
         log_trace(tt::LogDevice, "Should not appear");
         log_debug(tt::LogDevice, "Should appear");
-        log_info(tt::LogDevice, "Missing argument: {} {}", 1);
 
 #ifdef TT_LOGGER_TESTING
         auto output = get_output(sink.get());
