@@ -9,6 +9,8 @@
  * @note Requires setting the environment variable TT_METAL_LOGGER_LEVEL=debug before running
  */
 
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+
 #include <tt-logger/tt-logger-initializer.hpp>
 #include <tt-logger/tt-logger.hpp>
 

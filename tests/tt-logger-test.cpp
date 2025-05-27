@@ -16,6 +16,8 @@
  * The tests use Catch2 framework and include custom sink implementations for testing.
  */
 
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+
 #include <fmt/ranges.h>  // needed for container formatting
 #include <fmt/std.h>     // needed for filesystem::path formatting
 #include <spdlog/sinks/base_sink.h>
