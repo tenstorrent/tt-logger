@@ -78,69 +78,6 @@ constexpr const char * logtype_to_string(LogType logtype) noexcept {
                "UnknownType";
 }
 
-/**
- * @brief Implementation struct for logging functionality.
- *
- * This struct provides the core implementation for logging with support for different log levels,
- * log types, and formatted string output. It uses spdlog for the underlying logging mechanism.
- */
-struct log_impl {
-    /**
-     * @brief Constructor for logging with a specific log type.
-     *
-     * @tparam Args Variadic template parameter for format arguments
-     * @param loc Source location information (file, line, function)
-     * @param level The log level (trace, debug, info, etc.)
-     * @param type The specific log type/category
-     * @param fmt Format string for the log message
-     * @param args Variadic arguments to be formatted into the message
-     */
-    template <typename... Args>
-    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level, tt::LogType type,
-             fmt::format_string<Args...> fmt, Args &&... args) {
-        if (spdlog::should_log(level)) {
-            spdlog::log(loc, level, "[{}] {}", type, fmt::format(fmt, std::forward<Args>(args)...));
-        }
-    }
-
-    /**
-     * @brief Constructor for logging without a specific log type (uses LogAlways as default).
-     *
-     * @tparam Args Variadic template parameter for format arguments
-     * @param loc Source location information (file, line, function)
-     * @param level The log level (trace, debug, info, etc.)
-     * @param fmt Format string for the log message
-     * @param args Variadic arguments to be formatted into the message
-     */
-    template <typename... Args>
-    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level, fmt::format_string<Args...> fmt,
-             Args &&... args) :
-        log_impl(loc, level, tt::LogType::LogAlways, fmt, std::forward<Args>(args)...) {}
-
-    /**
-     * @brief Constructor for empty logging (no message).
-     *
-     * @param loc Source location information (file, line, function)
-     * @param level The log level (trace, debug, info, etc.)
-     */
-    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level) {
-        // Empty constructor - no logging
-    }
-
-    /**
-     * @brief Constructor for logging with only a log type.
-     *
-     * @param loc Source location information (file, line, function)
-     * @param level The log level (trace, debug, info, etc.)
-     * @param type The specific log type/category
-     */
-    log_impl(const spdlog::source_loc & loc, spdlog::level::level_enum level, tt::LogType type) {
-        if (spdlog::should_log(level)) {
-            spdlog::log(loc, level, "[{}]", type);
-        }
-    }
-};
-
 }  // namespace tt
 
 /**
@@ -156,93 +93,27 @@ template <> struct formatter<tt::LogType> : fmt::formatter<std::string_view> {
 #undef TT_LOGGER_TYPES
 
 /**
- * @def log_trace(...)
- * @brief Log a message at trace level.
+ * @brief Logging macros for different severity levels
  *
- * This macro logs a message with the lowest severity level, typically used for detailed
- * debugging information. The message will include source file, line number, and function name.
+ * These macros provide type-safe logging functionality with different severity levels.
+ * Each macro takes the following parameters:
+ * @param type The log type/category for the message (e.g., LogDevice, LogOp)
+ * @param fmt Format string for the log message
+ * @param ... Variadic arguments to be formatted into the message
  *
- * @param ... Format string and arguments to be logged
- * @see log_impl
+ * Available macros:
+ * - log_trace: Very detailed debug info, useful for tracing program flow
+ * - log_debug: General debugging messages
+ * - log_info: General operational messages
+ * - log_warning: Something unexpected but not immediately harmful
+ * - log_error: An error occurred, affecting the current operation
+ * - log_critical: Severe error, program may not continue safely
+ * - log_fatal: Alias for log_critical
  */
-#define log_trace(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::trace, ##__VA_ARGS__)
-
-/**
- * @def log_debug(...)
- * @brief Log a message at debug level.
- *
- * This macro logs a message at debug level, used for debugging information that is
- * more important than trace but less critical than info level.
- *
- * @param ... Format string and arguments to be logged
- * @see log_impl
- */
-#define log_debug(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::debug, ##__VA_ARGS__)
-
-/**
- * @def log_info(...)
- * @brief Log a message at info level.
- *
- * This macro logs a message at info level, used for general informational messages
- * about program execution.
- *
- * @param ... Format string and arguments to be logged
- * @see log_impl
- */
-#define log_info(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::info, ##__VA_ARGS__)
-
-/**
- * @def log_warning(...)
- * @brief Log a message at warning level.
- *
- * This macro logs a message at warning level, used for potentially harmful situations
- * that don't prevent program execution.
- *
- * @param ... Format string and arguments to be logged
- * @see log_impl
- */
-#define log_warning(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::warn, ##__VA_ARGS__)
-
-/**
- * @def log_error(...)
- * @brief Log a message at error level.
- *
- * This macro logs a message at error level, used for error events that might still
- * allow the program to continue running.
- *
- * @param ... Format string and arguments to be logged
- * @see log_impl
- */
-#define log_error(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::err, ##__VA_ARGS__)
-
-/**
- * @def log_critical(...)
- * @brief Log a message at critical level.
- *
- * This macro logs a message at critical level, used for very severe error events
- * that will likely lead to program termination.
- *
- * @param ... Format string and arguments to be logged
- * @see log_impl
- */
-#define log_critical(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::critical, ##__VA_ARGS__)
-
-/**
- * @def log_fatal(...)
- * @brief Log a message at fatal level (alias for critical).
- *
- * This macro is an alias for log_critical, used for fatal errors that will
- * lead to program termination.
- *
- * @param ... Format string and arguments to be logged
- * @see log_impl
- * @see log_critical
- */
-#define log_fatal(...) \
-    ::tt::log_impl(spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, spdlog::level::critical, ##__VA_ARGS__)
+#define log_trace(type, fmt, ...)    SPDLOG_TRACE(FMT_STRING("[{}] " fmt), type, ##__VA_ARGS__)
+#define log_debug(type, fmt, ...)    SPDLOG_DEBUG(FMT_STRING("[{}] " fmt), type, ##__VA_ARGS__)
+#define log_info(type, fmt, ...)     SPDLOG_INFO(FMT_STRING("[{}] " fmt), type, ##__VA_ARGS__)
+#define log_warning(type, fmt, ...)  SPDLOG_WARN(FMT_STRING("[{}] " fmt), type, ##__VA_ARGS__)
+#define log_error(type, fmt, ...)    SPDLOG_ERROR(FMT_STRING("[{}] " fmt), type, ##__VA_ARGS__)
+#define log_critical(type, fmt, ...) SPDLOG_CRITICAL(FMT_STRING("[{}] " fmt), type, ##__VA_ARGS__)
+#define log_fatal(type, fmt, ...)    SPDLOG_CRITICAL(FMT_STRING("[{}] " fmt), type, ##__VA_ARGS__)

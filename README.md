@@ -94,9 +94,6 @@ int main() {
     log_info(tt::LogDevice, "Device {} message", 123);
     log_info(tt::LogOp, "Op {} with {} parameters", "test", 42);
 
-    // Log with default category (LogAlways)
-    log_info("Default category message");
-
     // Log with source location automatically included
     log_error(tt::LogDevice, "Error occurred in function: {}", __func__);
 
@@ -120,7 +117,7 @@ int main() {
     tt::LoggerInitializer logger_init;
 
     // Now you can use the logging functions
-    tt::log_info("Logger initialized");
+    tt::log_info(tt::LogAlways, "Logger initialized");
     return 0;
 }
 ```
