@@ -280,5 +280,39 @@ TEST_CASE("Performance testing", "[logger]") {
             FAIL("Exception in log_info performance test: " << e.what());
         }
     }
+
+    SECTION("log_debug performance when level is info") {
+        try {
+            auto sink = setup_logger();
+            REQUIRE(sink != nullptr);
+
+            auto logger = spdlog::default_logger();
+            REQUIRE(logger != nullptr);
+
+            logger->set_level(spdlog::level::info);
+
+            // Test a single log first to verify setup
+            log_debug(tt::LogDevice, "Test setup message");
+
+            auto start = std::chrono::high_resolution_clock::now();
+
+            for (int i = 0; i < num_iterations; ++i) {
+                log_debug(tt::LogDevice, "Performance test message {}", i);
+            }
+
+            auto end      = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+            double avg_time_per_log = static_cast<double>(duration.count()) / num_iterations;
+            std::cout << "Average time per log_debug call (filtered): " << avg_time_per_log << " microseconds\n";
+
+            REQUIRE(duration.count() > 0);
+
+            // Cleanup
+            spdlog::drop_all();
+        } catch (const std::exception & e) {
+            FAIL("Exception in log_debug performance test: " << e.what());
+        }
+    }
 }
 #endif
