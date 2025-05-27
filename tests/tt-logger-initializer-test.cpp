@@ -23,12 +23,12 @@ static LoggerInitializer _logger(env_file_var, env_level_var, log_pattern);
 
 int main() {
     // Test using tt-logger macros
-    log_trace("This is a trace message");
-    log_debug("This is a debug message");
-    log_info("This is an info message");
-    log_warning("This is a warning message");
-    log_error("This is an error message");
-    log_critical("This is a critical message");
+    log_trace(LogAlways, "This is a trace message");
+    log_debug(LogAlways, "This is a debug message");
+    log_info(LogAlways, "This is an info message");
+    log_warning(LogAlways, "This is a warning message");
+    log_error(LogAlways, "This is an error message");
+    log_critical(LogAlways, "This is a critical message");
 
     return 0;
 }

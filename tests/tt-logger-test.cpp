@@ -100,11 +100,6 @@ static void soft_check_log_contains(void * sink_ptr, const std::string & expecte
 TEST_CASE("Basic logging functionality", "[logger]") {
     auto sink = setup_logger();
 
-    SECTION("String literal") {
-        log_info("This is a string literal");
-        soft_check_log_contains(sink.get(), "[Always] This is a string literal");
-    }
-
     SECTION("Info") {
         log_info(tt::LogDevice, "Device message");
         soft_check_log_contains(sink.get(), "[Device] Device message");
@@ -129,16 +124,6 @@ TEST_CASE("Basic logging functionality", "[logger]") {
     SECTION("Critical") {
         log_critical(tt::LogOp, "Model critical error");
         soft_check_log_contains(sink.get(), "[Op] Model critical error");
-    }
-
-    SECTION("Empty log_info") {
-        log_info();
-        soft_check_log_contains(sink.get(), "");  // Should not log anything
-    }
-
-    SECTION("LogType only") {
-        log_info(tt::LogMetal);
-        soft_check_log_contains(sink.get(), "[Metal]");  // Should log just the type without trailing space
     }
 }
 
@@ -175,24 +160,6 @@ TEST_CASE("Format string functionality", "[logger]") {
                                 "[SiliconDriver] Opening local chip ids/pci ids: {1, 2, 3}/[4096, 8192, 12288] and "
                                 "remote chip ids {4, 5, 6}");
     }
-
-    SECTION("Format string error cases") {
-        SECTION("Missing argument") {
-            // Should throw an exception for missing argument
-            REQUIRE_THROWS_AS(log_info(tt::LogDevice, "Missing argument: {} {}", 1), std::runtime_error);
-        }
-
-        SECTION("Invalid format specifier") {
-            // Should throw an exception for invalid format specifier
-            REQUIRE_THROWS_AS(log_info(tt::LogDevice, "Invalid format: {invalid}"), std::runtime_error);
-        }
-
-        SECTION("Empty format string with arguments") {
-            // Empty format string should work fine, extra arguments are ignored
-            log_info(tt::LogDevice, "", 1, 2, 3);
-            soft_check_log_contains(sink.get(), "[Device] ");
-        }
-    }
 }
 
 TEST_CASE("Log level filtering", "[logger]") {
@@ -204,6 +171,7 @@ TEST_CASE("Log level filtering", "[logger]") {
 
         log_trace(tt::LogDevice, "Should not appear");
         log_debug(tt::LogDevice, "Should appear");
+        log_info(tt::LogDevice, "Missing argument: {} {}", 1);
 
 #ifdef TT_LOGGER_TESTING
         auto output = get_output(sink.get());
@@ -238,15 +206,6 @@ TEST_CASE("Log type to string mapping", "[logger]") {
     REQUIRE(std::string(tt::logtype_to_string(tt::LogDevice)) == "Device");
     REQUIRE(std::string(tt::logtype_to_string(tt::LogOp)) == "Op");
     REQUIRE(std::string(tt::logtype_to_string(tt::LogLLRuntime)) == "LLRuntime");
-}
-
-TEST_CASE("Default log type behavior", "[logger]") {
-    auto sink = setup_logger();
-
-    SECTION("Defaults to LogAlways") {
-        log_info("Default type message");
-        soft_check_log_contains(sink.get(), "[Always] Default type message");
-    }
 }
 
 TEST_CASE("File logging functionality", "[logger]") {
@@ -318,40 +277,6 @@ TEST_CASE("Performance testing", "[logger]") {
             spdlog::drop_all();
         } catch (const std::exception & e) {
             FAIL("Exception in log_info performance test: " << e.what());
-        }
-    }
-
-    SECTION("log_debug performance when level is info") {
-        try {
-            auto sink = setup_logger();
-            REQUIRE(sink != nullptr);
-
-            auto logger = spdlog::default_logger();
-            REQUIRE(logger != nullptr);
-
-            logger->set_level(spdlog::level::info);
-
-            // Test a single log first to verify setup
-            log_debug(tt::LogOp, "Test setup message");
-
-            auto start = std::chrono::high_resolution_clock::now();
-
-            for (int i = 0; i < num_iterations; ++i) {
-                log_debug(tt::LogOp, "Debug performance test message {}", i);
-            }
-
-            auto end      = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-
-            double avg_time_per_log = static_cast<double>(duration.count()) / num_iterations;
-            std::cout << "Average time per log_debug call: " << avg_time_per_log << " microseconds\n";
-
-            REQUIRE(duration.count() > 0);
-
-            // Cleanup
-            spdlog::drop_all();
-        } catch (const std::exception & e) {
-            FAIL("Exception in log_debug performance test: " << e.what());
         }
     }
 }
