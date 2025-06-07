@@ -189,7 +189,7 @@ include(cmake/CPM.cmake)
 CPMAddPackage(
     NAME tt-logger
     GITHUB_REPOSITORY tenstorrent/tt-logger
-    VERSION 1.0.0 # Or your desired version/tag
+    VERSION 1.0.7 # Or your desired version/tag
 )
 
 # Link to your target
