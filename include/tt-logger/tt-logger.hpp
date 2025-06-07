@@ -34,6 +34,7 @@
     X(Metal)         \
     X(TTNN)          \
     X(MetalTrace)    \
+    X(Inspector)     \
     X(SiliconDriver) \
     X(EmulationDriver)
 #endif
