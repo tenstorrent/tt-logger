@@ -18,14 +18,14 @@ A flexible and performant C++ logging library for Tenstorrent projects.
 ## Log levels
 Log level is explicit in the API call.
 
-| tt-logger API        | spdlog Function       | Level      | Description                                                                                         | When to Use                                                                          |
-|----------------------|------------------------|------------|-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| `log_trace(...)`     | `spdlog::trace()`      | `trace`    | Very detailed debug info. Useful for tracing program flow or variable changes in critical sections. | In development only, deep-dive into complex logic, loops, or performance paths.      |
-| `log_debug(...)`     | `spdlog::debug()`      | `debug`    | General debugging messages.                                                                         | For diagnostics during development. Should be compiled out or disabled in release.   |
-| `log_info(...)`      | `spdlog::info()`       | `info`     | General operational messages.                                                                       | To report expected events, like startup/shutdown, config details, or progress.       |
-| `log_warning(...)`   | `spdlog::warn()`       | `warn`     | Something unexpected but not immediately harmful.                                                   | For soft failures, fallbacks, deprecated usage, or retry scenarios.                  |
-| `log_error(...)`     | `spdlog::error()`      | `error`    | An error occurred, affecting the current operation.                                                 | For recoverable errors like failed file loads, failed RPCs, etc.                     |
-| `log_critical(...)`  | `spdlog::critical()`   | `critical` | Severe error. Program may not continue safely.                                                      | For unrecoverable states: corrupt data, system errors, fatal initialization failure. |
+| tt-logger API                    | Description                                                                                         | When to Use                                                                          |
+|----------------------------------|-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| `log_trace(LogType, ...)`        | Very detailed debug info. Useful for tracing program flow or variable changes in critical sections. | In development only, deep-dive into complex logic, loops, or performance paths.      |
+| `log_debug(LogType, ...)`        | General debugging messages.                                                                         | For diagnostics during development. Should be compiled out or disabled in release.   |
+| `log_info(LogType, ...)`         | General operational messages.                                                                       | To report expected events, like startup/shutdown, config details, or progress.       |
+| `log_warning(LogType, ...)`      | Something unexpected but not immediately harmful.                                                   | For soft failures, fallbacks, deprecated usage, or retry scenarios.                  |
+| `log_error(LogType, ...)`        | An error occurred, affecting the current operation.                                                 | For recoverable errors like failed file loads, failed RPCs, etc.                     |
+| `log_critical(LogType, ...)`     | Severe error. Program may not continue safely.                                                      | For unrecoverable states: corrupt data, system errors, fatal initialization failure. |
 
 ### Error vs Critical
 
