@@ -13,6 +13,7 @@
 #include <spdlog/spdlog.h>
 
 #include <array>
+#include <bitset>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -88,36 +89,39 @@ constexpr const char * logtype_to_string(LogType logtype) noexcept {
  * @brief LogType filtering manager
  *
  * This class handles the filtering of log messages based on LogType using environment variables.
- * It uses a bitmask approach similar to the old logger for efficient runtime filtering.
+ * It uses a bitset approach for efficient and safe runtime filtering.
  */
 class LogTypeFilter {
   private:
-    std::uint64_t enabled_mask = (1ULL << LogAlways);  // Always enable LogAlways by default
+    std::bitset<64> enabled_mask;  // Support up to 64 log types
 
     LogTypeFilter() {
+        // Always enable LogAlways by default
+        enabled_mask.set(LogAlways);
+
         // Parse TT_LOGGER_TYPES environment variable
         const char * types_env = std::getenv("TT_LOGGER_TYPES");
         if (types_env) {
             if (std::strstr(types_env, "All")) {
                 // Enable all log types
-                enabled_mask = 0xFFFFFFFFFFFFFFFFULL;
+                enabled_mask.set();  // Set all bits
             } else {
                 // Parse specific log types
-                enabled_mask             = 0;  // Start with none enabled
+                enabled_mask.reset();  // Clear all bits first
                 std::uint32_t type_index = 0;
                 for (const char * type_name : log_type_names) {
                     if (std::strstr(types_env, type_name) != nullptr) {
-                        enabled_mask |= (1ULL << type_index);
+                        enabled_mask.set(type_index);
                     }
                     type_index++;
                 }
                 // Always ensure LogAlways is enabled
-                enabled_mask |= (1ULL << LogAlways);
+                enabled_mask.set(LogAlways);
             }
         }
         // If no environment variable is set, default to all types enabled
         else {
-            enabled_mask = 0xFFFFFFFFFFFFFFFFULL;
+            enabled_mask.set();  // Set all bits
         }
     }
 
@@ -136,9 +140,7 @@ class LogTypeFilter {
      * @param logtype The LogType to check
      * @return true if the LogType is enabled, false otherwise
      */
-    bool log(LogType logtype) const noexcept {
-        return (enabled_mask & (1ULL << static_cast<std::uint32_t>(logtype))) != 0;
-    }
+    bool log(LogType logtype) const noexcept { return enabled_mask.test(static_cast<std::size_t>(logtype)); }
 };
 
 }  // namespace tt
