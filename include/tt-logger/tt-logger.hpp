@@ -80,7 +80,7 @@ class LoggerRegistry {
         std::size_t index = 0;
 #define X(name)                                                     \
     loggers[index] = std::make_shared<spdlog::logger>(#name, sink); \
-    loggers[index].get()->set_level(default_level);
+    loggers[index].get()->set_level(default_level);                 \
     loggers[index++].get()->flush_on(spdlog::level::critical);
         TT_LOGGER_TYPES
 #undef X
