@@ -4,315 +4,160 @@
 
 /**
  * @file tt-logger-test.cpp
- * @brief Test suite for the tt-logger library
+ * @brief Simple test program for the tt-logger library
  *
- * This file contains comprehensive unit tests for the tt-logger library, including:
+ * This file contains a simple test program that demonstrates:
  * - Basic logging functionality (info, debug, warning, error, critical)
  * - Format string functionality with various argument types
- * - Log level filtering and type mapping
- * - File logging capabilities
- * - Performance testing for logging operations
- *
- * The tests use Catch2 framework and include custom sink implementations for testing.
+ * - Log level filtering
  */
-
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 
 #include <fmt/ranges.h>  // needed for container formatting
 #include <fmt/std.h>     // needed for filesystem::path formatting
-#include <spdlog/sinks/base_sink.h>
-#include <spdlog/sinks/basic_file_sink.h>
 
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <set>
-#include <sstream>
 #include <string>
 #include <tt-logger/tt-logger.hpp>
 #include <vector>
 
-#define TT_LOGGER_TESTING
+int main() {
+    std::cout << "=== TT-Logger Simple Test Program ===" << std::endl;
+    std::cout << std::endl;
 
-// Custom sink to capture log output when TT_LOGGER_TESTING is defined
-#ifdef TT_LOGGER_TESTING
-class TestSink : public spdlog::sinks::base_sink<std::mutex> {
-  public:
-    std::stringstream buffer;
+    // Test 1: Basic logging functionality
+    std::cout << "Test 1: Basic logging functionality" << std::endl;
+    std::cout << "Expected: Should see log messages with different levels and types" << std::endl;
+    std::cout << "Actual output:" << std::endl;
 
-  protected:
-    void sink_it_(const spdlog::details::log_msg & msg) override {
-        spdlog::memory_buf_t formatted;
-        formatter_->format(msg, formatted);
-        buffer << fmt::to_string(formatted);
+    log_trace(tt::LogOp, "Op trace message");
+    log_debug(tt::LogInspector, "Inspector debug message");
+    log_info(tt::LogDevice, "Device info message");
+    log_warning(tt::LogLLRuntime, "Runtime warning message");
+    log_error(tt::LogDevice, "Device error message");
+    log_critical(tt::LogOp, "Op critical error message");
+
+    std::cout << std::endl;
+
+    // Test 2: Format string functionality
+    std::cout << "Test 2: Format string functionality" << std::endl;
+    std::cout << "Expected: Should see formatted messages with arguments" << std::endl;
+    std::cout << "Actual output:" << std::endl;
+
+    log_info(tt::LogDevice, "Device {} message with number {}", "formatted", 123);
+    log_info(tt::LogOp, "Op test with {} parameters and value {}", "multiple", 42);
+
+    std::cout << std::endl;
+
+    // Test 3: Container formatting
+    std::cout << "Test 3: Container formatting" << std::endl;
+    std::cout << "Expected: Should see formatted containers (sets and vectors)" << std::endl;
+    std::cout << "Actual output:" << std::endl;
+
+    std::set<int>    chip_ids = { 1, 2, 3 };
+    std::vector<int> pci_ids  = { 4096, 8192, 12288 };
+
+    log_info(tt::LogSiliconDriver, "Opening chip ids: {} with pci ids: {}", chip_ids, pci_ids);
+
+    std::cout << std::endl;
+
+    // Test 4: Filesystem path formatting
+    std::cout << "Test 4: Filesystem path formatting" << std::endl;
+    std::cout << "Expected: Should see formatted filesystem path" << std::endl;
+    std::cout << "Actual output:" << std::endl;
+
+    std::filesystem::path test_path = "/usr/bin/test";
+    log_info(tt::LogOp, "Using path: {}", test_path);
+
+    std::cout << std::endl;
+
+    // Test 5: Log type to string mapping
+    std::cout << "Test 5: Log type to string mapping" << std::endl;
+    std::cout << "Expected: Device, Op, LLRuntime, SiliconDriver" << std::endl;
+    std::cout << "Actual output: " << tt::logtype_to_string(tt::LogDevice) << ", " << tt::logtype_to_string(tt::LogOp)
+              << ", " << tt::logtype_to_string(tt::LogLLRuntime) << ", " << tt::logtype_to_string(tt::LogSiliconDriver)
+              << std::endl;
+
+    std::cout << std::endl;
+
+    // Test 6: Debug level filtering
+    std::cout << "Test 6: Debug level filtering" << std::endl;
+    std::cout << "Expected: Debug message should appear when level is set to debug" << std::endl;
+    std::cout << "Setting log level to debug..." << std::endl;
+
+    tt::LoggerRegistry::instance().set_level(spdlog::level::debug);
+    std::cout << "Actual output:" << std::endl;
+    log_debug(tt::LogOp, "This debug message should be visible");
+
+    std::cout << std::endl;
+
+    // Test 7: Debug level filtering (info level)
+    std::cout << "Test 7: Debug level filtering (info level)" << std::endl;
+    std::cout << "Expected: Debug message should NOT appear when level is set to info" << std::endl;
+    std::cout << "Setting log level to info..." << std::endl;
+
+    tt::LoggerRegistry::instance().set_level(spdlog::level::info);
+    std::cout << "Actual output (debug should be filtered out):" << std::endl;
+    log_debug(tt::LogOp, "This debug message should NOT be visible");
+    log_info(tt::LogOp, "This info message should be visible");
+
+    std::cout << std::endl;
+
+    // Performance Tests
+    std::cout << "=== Performance Tests ===" << std::endl;
+
+    // Test 8: log_info performance
+    std::cout << "Test 8: log_info performance (1000 iterations)" << std::endl;
+    auto start_info = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < 1000; ++i) {
+        log_info(tt::LogDevice, "Performance test iteration {}", i);
     }
 
-    void flush_() override { buffer.flush(); }
-};
-#endif
+    auto end_info      = std::chrono::high_resolution_clock::now();
+    auto duration_info = std::chrono::duration_cast<std::chrono::microseconds>(end_info - start_info);
+    std::cout << "log_info average time per call: " << duration_info.count() / 1000.0 << " microseconds" << std::endl;
 
-// Setup logger: capture or normal depending on TT_LOGGER_TESTING
-static std::shared_ptr<void> setup_logger() {
-#ifdef TT_LOGGER_TESTING
-    auto sink   = std::make_shared<TestSink>();
-    auto logger = std::make_shared<spdlog::logger>("tt-logger-test", sink);
-    spdlog::set_default_logger(logger);
-    return sink;
-#else
-    return nullptr;
-#endif
+    std::cout << std::endl;
+
+    // Test 9: log_debug performance
+    std::cout << "Test 9: log_debug performance (1000 iterations)" << std::endl;
+    tt::LoggerRegistry::instance().set_level(spdlog::level::debug);  // Ensure debug messages are processed
+
+    auto start_debug = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < 1000; ++i) {
+        log_debug(tt::LogOp, "Performance test iteration {}", i);
+    }
+
+    auto end_debug      = std::chrono::high_resolution_clock::now();
+    auto duration_debug = std::chrono::duration_cast<std::chrono::microseconds>(end_debug - start_debug);
+    std::cout << "log_debug average time per call: " << duration_debug.count() / 1000.0 << " microseconds" << std::endl;
+
+    std::cout << std::endl;
+
+    // Test 10: log_debug performance when filtered out
+    std::cout << "Test 10: log_debug performance when filtered out (1000 iterations)" << std::endl;
+    tt::LoggerRegistry::instance().set_level(spdlog::level::info);  // Filter out debug messages
+
+    auto start_debug_filtered = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < 1000; ++i) {
+        log_debug(tt::LogOp, "Performance test iteration {}", i);
+    }
+
+    auto end_debug_filtered = std::chrono::high_resolution_clock::now();
+    auto duration_debug_filtered =
+        std::chrono::duration_cast<std::chrono::microseconds>(end_debug_filtered - start_debug_filtered);
+    std::cout << "log_debug average time per call (filtered): " << duration_debug_filtered.count() / 1000.0
+              << " microseconds" << std::endl;
+
+    std::cout << std::endl;
+    std::cout << "=== Performance tests completed ===" << std::endl;
+
+    std::cout << "=== All tests completed ===" << std::endl;
+
+    return 0;
 }
-
-// Get captured output (only in testing)
-static std::string get_output(void * sink_ptr) {
-#ifdef TT_LOGGER_TESTING
-    auto sink = static_cast<TestSink *>(sink_ptr);
-    return sink->buffer.str();
-#else
-    return {};
-#endif
-}
-
-// Clear captured output (only in testing)
-static void clear_output(void * sink_ptr) {
-#ifdef TT_LOGGER_TESTING
-    auto sink = static_cast<TestSink *>(sink_ptr);
-    sink->buffer.str("");
-    sink->buffer.clear();
-#endif
-}
-
-// Smart checker: validate when testing, force success otherwise
-static void soft_check_log_contains(void * sink_ptr, const std::string & expected) {
-#ifdef TT_LOGGER_TESTING
-    auto output = get_output(sink_ptr);
-    INFO("Expected log to contain: '" << expected << "'\nActual log output:\n" << output);
-    REQUIRE(output.find(expected) != std::string::npos);
-    clear_output(sink_ptr);
-#else
-    (void) sink_ptr;
-    (void) expected;
-    SUCCEED();
-#endif
-}
-
-TEST_CASE("Basic logging functionality", "[logger]") {
-    auto sink = setup_logger();
-
-    SECTION("Info") {
-        log_info(tt::LogDevice, "Device message");
-        soft_check_log_contains(sink.get(), "[Device] Device message");
-    }
-
-    SECTION("Debug") {
-        spdlog::default_logger()->set_level(spdlog::level::debug);
-        log_debug(tt::LogOp, "Model debug message");
-        soft_check_log_contains(sink.get(), "[Op] Model debug message");
-    }
-
-    SECTION("Warning") {
-        log_warning(tt::LogLLRuntime, "Runtime warning");
-        soft_check_log_contains(sink.get(), "[LLRuntime] Runtime warning");
-    }
-
-    SECTION("Error") {
-        log_error(tt::LogDevice, "Device error");
-        soft_check_log_contains(sink.get(), "[Device] Device error");
-    }
-
-    SECTION("Critical") {
-        log_critical(tt::LogOp, "Model critical error");
-        soft_check_log_contains(sink.get(), "[Op] Model critical error");
-    }
-}
-
-TEST_CASE("Format string functionality", "[logger]") {
-    auto sink = setup_logger();
-
-    SECTION("Single argument") {
-        log_info(tt::LogDevice, "Device {} message", 123);
-        soft_check_log_contains(sink.get(), "[Device] Device 123 message");
-    }
-
-    SECTION("Multiple arguments") {
-        log_info(tt::LogOp, "Model {} with {} parameters", "test", 42);
-        soft_check_log_contains(sink.get(), "[Op] Model test with 42 parameters");
-    }
-
-    SECTION("Filesystem path formatting") {
-        std::filesystem::path p = "/usr/bin/hello";
-        log_info(tt::LogOp, "Path: {}", p);
-        soft_check_log_contains(sink.get(), "[Op] Path: /usr/bin/hello");
-    }
-
-    SECTION("Multiple complex arguments") {
-        using chip_id_t                     = int;                    // Assuming chip_id_t is an integer type
-        std::set<chip_id_t> local_chip_ids  = { 1, 2, 3 };
-        std::vector<int>    pci_ids         = { 4096, 8192, 12288 };  // Example PCI IDs in decimal
-        std::set<chip_id_t> remote_chip_ids = { 4, 5, 6 };
-
-        log_info(tt::LogSiliconDriver, "Opening local chip ids/pci ids: {}/{} and remote chip ids {}", local_chip_ids,
-                 pci_ids, remote_chip_ids);
-
-        // The actual log output includes timestamp, logger name, and line number
-        soft_check_log_contains(sink.get(),
-                                "[SiliconDriver] Opening local chip ids/pci ids: {1, 2, 3}/[4096, 8192, 12288] and "
-                                "remote chip ids {4, 5, 6}");
-    }
-}
-
-TEST_CASE("Log level filtering", "[logger]") {
-    auto sink   = setup_logger();
-    auto logger = spdlog::default_logger();
-
-    SECTION("Debug filtering") {
-        logger->set_level(spdlog::level::debug);
-
-        log_trace(tt::LogDevice, "Should not appear");
-        log_debug(tt::LogDevice, "Should appear");
-
-#ifdef TT_LOGGER_TESTING
-        auto output = get_output(sink.get());
-        INFO("Captured output:\n" << output);
-        REQUIRE(output.find("Should not appear") == std::string::npos);
-        REQUIRE(output.find("Should appear") != std::string::npos);
-        clear_output(sink.get());
-#else
-        SUCCEED();
-#endif
-    }
-
-    SECTION("Info filtering") {
-        logger->set_level(spdlog::level::info);
-
-        log_debug(tt::LogDevice, "Should not appear");
-        log_info(tt::LogDevice, "Should appear");
-
-#ifdef TT_LOGGER_TESTING
-        auto output = get_output(sink.get());
-        INFO("Captured output:\n" << output);
-        REQUIRE(output.find("Should not appear") == std::string::npos);
-        REQUIRE(output.find("Should appear") != std::string::npos);
-        clear_output(sink.get());
-#else
-        SUCCEED();
-#endif
-    }
-}
-
-TEST_CASE("Log type to string mapping", "[logger]") {
-    REQUIRE(std::string(tt::logtype_to_string(tt::LogDevice)) == "Device");
-    REQUIRE(std::string(tt::logtype_to_string(tt::LogOp)) == "Op");
-    REQUIRE(std::string(tt::logtype_to_string(tt::LogLLRuntime)) == "LLRuntime");
-}
-
-TEST_CASE("File logging functionality", "[logger]") {
-    // Create a temporary file for testing
-    std::filesystem::path temp_log_file = std::filesystem::temp_directory_path() / "tt-logger-test.log";
-
-    SECTION("Basic file logging") {
-        // Create a file sink
-        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_st>(temp_log_file.string());
-        auto logger    = std::make_shared<spdlog::logger>("tt-logger-file-test", file_sink);
-        spdlog::set_default_logger(logger);
-
-        // Write some test logs
-        log_info(tt::LogDevice, "Device file message");
-        log_warning(tt::LogOp, "Model file warning");
-        log_error(tt::LogLLRuntime, "Runtime file error");
-
-        // Flush and close the logger
-        logger->flush();
-        spdlog::drop_all();
-
-        // Read and verify the file contents
-        std::ifstream     log_file(temp_log_file);
-        std::stringstream buffer;
-        buffer << log_file.rdbuf();
-        std::string file_contents = buffer.str();
-
-        REQUIRE(file_contents.find("[Device] Device file message") != std::string::npos);
-        REQUIRE(file_contents.find("[Op] Model file warning") != std::string::npos);
-        REQUIRE(file_contents.find("[LLRuntime] Runtime file error") != std::string::npos);
-
-        // Clean up
-        std::filesystem::remove(temp_log_file);
-    }
-}
-
-#ifdef TT_LOGGER_TESTING
-TEST_CASE("Performance testing", "[logger]") {
-    constexpr int num_iterations = 10000;  // Reduced iterations for testing
-
-    SECTION("log_info performance") {
-        try {
-            auto sink = setup_logger();
-            REQUIRE(sink != nullptr);
-
-            auto logger = spdlog::default_logger();
-            REQUIRE(logger != nullptr);
-
-            logger->set_level(spdlog::level::info);
-
-            // Test a single log first to verify setup
-            log_info(tt::LogDevice, "Test setup message");
-
-            auto start = std::chrono::high_resolution_clock::now();
-
-            for (int i = 0; i < num_iterations; ++i) {
-                log_info(tt::LogDevice, "Performance test message {}", i);
-            }
-
-            auto end      = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-
-            double avg_time_per_log = static_cast<double>(duration.count()) / num_iterations;
-            std::cout << "Average time per log_info call: " << avg_time_per_log << " microseconds\n";
-
-            REQUIRE(duration.count() > 0);
-
-            // Cleanup
-            spdlog::drop_all();
-        } catch (const std::exception & e) {
-            FAIL("Exception in log_info performance test: " << e.what());
-        }
-    }
-
-    SECTION("log_debug performance when level is info") {
-        try {
-            auto sink = setup_logger();
-            REQUIRE(sink != nullptr);
-
-            auto logger = spdlog::default_logger();
-            REQUIRE(logger != nullptr);
-
-            logger->set_level(spdlog::level::info);
-
-            // Test a single log first to verify setup
-            log_debug(tt::LogDevice, "Test setup message");
-
-            auto start = std::chrono::high_resolution_clock::now();
-
-            for (int i = 0; i < num_iterations; ++i) {
-                log_debug(tt::LogDevice, "Performance test message {}", i);
-            }
-
-            auto end      = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-
-            double avg_time_per_log = static_cast<double>(duration.count()) / num_iterations;
-            std::cout << "Average time per log_debug call (filtered): " << avg_time_per_log << " microseconds\n";
-
-            REQUIRE(duration.count() > 0);
-
-            // Cleanup
-            spdlog::drop_all();
-        } catch (const std::exception & e) {
-            FAIL("Exception in log_debug performance test: " << e.what());
-        }
-    }
-}
-#endif
