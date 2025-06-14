@@ -151,9 +151,14 @@ class LoggerRegistry {
         } else {
             auto sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
+            // Check if output should be colored:
+            // 1. Traditional terminal detection
+            // 2. CI environments that support ANSI colors (GitHub Actions, etc.)
             bool is_terminal = isatty(STDOUT_FILENO) != 0;
+            bool is_ci_with_colors = std::getenv("GITHUB_ACTIONS") != nullptr || std::getenv("CI") != nullptr ||
+                                     std::getenv("CONTINUOUS_INTEGRATION") != nullptr;
 
-            sink->set_pattern(is_terminal ? colored_pattern : plain_pattern);
+            sink->set_pattern((is_terminal || is_ci_with_colors) ? colored_pattern : plain_pattern);
 
             return sink;
         }
