@@ -8,9 +8,11 @@ A flexible and performant C++ logging library for Tenstorrent projects.
 - Utilizes the `{fmt}` library for Python-style, type-safe message formatting.
 - Compile-time validation of format strings.
 - Supports standard log levels: `trace`, `debug`, `info`, `warning`, `error`, `critical` (see table below for details).
-- Categorization of logs using `LogType` (e.g., `LogDevice`, `LogModel`).
+- Categorization of logs using `LogType` (e.g., `LogDevice`, `LogOp`).
 - Optional category specification, defaults to `LogAlways`.
-- Efficient logging: Formatting cost is avoided for `trace` and `debug` messages if the level is disabled.
+- **Compile-time elimination**: Log statements can be completely eliminated at compile time using `SPDLOG_ACTIVE_LEVEL`, just like spdlog.
+- **Runtime filtering**: Log categories can be filtered at runtime using the `TT_LOGGER_TYPES` environment variable.
+- Efficient logging: Formatting cost is avoided for disabled log levels.
 - Header-only library for easy integration.
 - Macro-based implementation for automatic source location tracking.
 - Logging behavior can be customized, just as you would customize the default logger in spdlog.
@@ -49,6 +51,29 @@ Examples:
 
 - Failed assertion or invariant violation
 
+## Log Categories
+The following log categories are available:
+
+- Always
+- Test
+- Timer
+- Device
+- LLRuntime
+- Loader
+- BuildKernels
+- Verif
+- Op
+- Dispatch
+- Fabric
+- Metal
+- TTNN
+- MetalTrace
+- Inspector
+- SiliconDriver
+- EmulationDriver
+
+Each category is prefixed with "Log" when used in code (e.g., `tt::LogDevice`, `tt::LogOp`, `tt::LogInspector`).
+
 ## Dependencies
 
 `tt-logger` requires the following libraries:
@@ -61,8 +86,6 @@ These dependencies must be made available to `tt-logger` during the CMake config
 1.  **Defining them in your project first:** Add `fmt` and `spdlog` (e.g., using `CPMAddPackage`, `FetchContent`, `find_package`, etc.) in your main `CMakeLists.txt` *before* adding `tt-logger`. This is the recommended approach for better version control across your project.
 2.  **Letting `tt-logger` fetch them:** If the `fmt::fmt-header-only` and `spdlog::spdlog_header_only` targets are not found, `tt-logger` will attempt to download them using CPM as specified in its `CMakeLists.txt`.
 
-- **Catch2**: Required only for building and running tests (`TT_LOGGER_BUILD_TESTING=ON`). This is managed within the `tests/` directory.
-
 ## Building
 
 ```bash
@@ -70,8 +93,10 @@ These dependencies must be made available to `tt-logger` during the CMake config
 cmake -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build
 
-# Run tests
-ctest --test-dir build
+# Build and run tests (optional)
+cmake -B build -DCMAKE_BUILD_TYPE=Debug -DTT_LOGGER_BUILD_TESTING=ON
+cmake --build build
+./build/tests/tt-logger-test
 
 # Install (optional)
 cmake --install build
@@ -124,10 +149,11 @@ int main() {
 
 ### Environment Variables
 
-The `LoggerInitializer` can be configured using the following environment variables:
+The logger can be configured using the following environment variables:
 
 - `TT_LOGGER_FILE`: Path to the log file. If not set or empty, logs will be written to stdout.
 - `TT_LOGGER_LEVEL`: Log level (trace, debug, info, warning, error, critical). Defaults to "info" if not set.
+- `TT_LOGGER_TYPES`: Semicolon-separated list of log categories to enable. Use "All" to enable all categories. If not set, all categories are enabled by default.
 
 Example:
 ```bash
@@ -137,38 +163,55 @@ export TT_LOGGER_LEVEL=debug
 
 # Log to stdout with warning level
 export TT_LOGGER_LEVEL=warning
+
+# Only log Device and Op messages
+export TT_LOGGER_TYPES=Device,Op
+
+# Enable all log types explicitly
+export TT_LOGGER_TYPES=All
 ```
 
-### Custom Environment Variable Names
+### Log Category Filtering with TT_LOGGER_TYPES
 
-You can also specify custom environment variable names when creating the initializer:
+The `TT_LOGGER_TYPES` environment variable allows you to filter which log categories are active at runtime. This is useful for focusing on specific subsystems during debugging.
 
-```cpp
-// Use custom environment variable names
-tt::LoggerInitializer logger_init("CUSTOM_LOG_FILE", "CUSTOM_LOG_LEVEL");
+```bash
+# Only show Metal and TTNN logs
+export TT_LOGGER_TYPES="Metal;TTNN"
+
+# Show all device-related logs
+export TT_LOGGER_TYPES="Device;SiliconDriver;EmulationDriver"
 ```
 
-## Available Categories
-The following log categories are available:
+## Compile-time Log Level Control
 
-- Always
-- Test
-- Timer
-- Device
-- LLRuntime
-- Loader
-- BuildKernels
-- Verif
-- Op
-- Dispatch
-- Fabric
-- Metal
-- TTNN
-- MetalTrace
-- SiliconDriver
-- EmulationDriver
+`tt-logger` supports compile-time elimination of log statements, controlled by the `SPDLOG_ACTIVE_LEVEL` macro, just like spdlog. This allows you to completely remove lower-level log statements from release builds for maximum performance.
 
-Each category is prefixed with "Log" when used in code (e.g., `tt::LogDevice`, `tt::LogOp`).
+// Compile with -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO to eliminate
+// trace and debug statements at compile time
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_INFO
+#include <tt-logger/tt-logger.hpp>
+
+int main() {
+    // These calls will be compiled to (void)0 and completely eliminated
+    log_trace(tt::LogOp, "This trace message is eliminated");
+    log_debug(tt::LogOp, "This debug message is eliminated");
+
+    // These calls will be compiled normally
+    log_info(tt::LogOp, "This info message remains");
+    log_error(tt::LogOp, "This error message remains");
+    return 0;
+}
+```
+
+Available compile-time levels:
+- `SPDLOG_LEVEL_TRACE` (0) - All messages compiled
+- `SPDLOG_LEVEL_DEBUG` (1) - Debug and above compiled
+- `SPDLOG_LEVEL_INFO` (2) - Info and above compiled (recommended for release)
+- `SPDLOG_LEVEL_WARN` (3) - Warning and above compiled
+- `SPDLOG_LEVEL_ERROR` (4) - Error and above compiled
+- `SPDLOG_LEVEL_CRITICAL` (5) - Only critical messages compiled
+- `SPDLOG_LEVEL_OFF` (6) - All logging disabled
 
 ## CMake Integration
 
