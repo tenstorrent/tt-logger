@@ -128,10 +128,6 @@ int main() {
 
 The logging macros automatically include source location information (file, line number, and function name) in the log output. This is handled transparently by the macro implementation.
 
-## Logger Initialization
-
-The `LoggerInitializer` class provides a convenient way to set up the logging system with either file-based or console-based logging. It supports configuration through environment variables.
-
 ### Basic Usage
 
 ```cpp
