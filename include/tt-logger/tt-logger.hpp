@@ -115,6 +115,9 @@ class LoggerRegistry {
             if (level_str == "critical") {
                 return spdlog::level::critical;
             }
+            if (level_str == "fatal") {
+                return spdlog::level::critical;
+            }
             if (level_str == "off") {
                 return spdlog::level::off;
             }
