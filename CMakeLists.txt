@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(tt-logger VERSION 1.1.1 LANGUAGES CXX)
+project(tt-logger VERSION 1.1.3 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
@@ -30,8 +30,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.23)
             FILE_SET api
             TYPE HEADERS
             BASE_DIRS ${CMAKE_INSTALL_INCLUDEDIR}
-            FILES
-                ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/tt-logger.hpp
+            FILES ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/tt-logger.hpp
     )
 endif()
 

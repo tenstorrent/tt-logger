@@ -93,6 +93,10 @@ class LoggerRegistry {
 
     static spdlog::level::level_enum get_default_log_level() {
         const char * env_level = std::getenv("TT_LOGGER_LEVEL");
+        if (!env_level) {
+            env_level = std::getenv("TT_METAL_LOGGER_LEVEL");
+        }
+
         if (env_level) {
             std::string level_str = env_level;
             std::transform(level_str.begin(), level_str.end(), level_str.begin(), ::tolower);
@@ -142,6 +146,9 @@ class LoggerRegistry {
             "\033[90m(%s:%#)\033[0m";                 // Dark gray source location
 
         const char * file_path = std::getenv("TT_LOGGER_FILE");
+        if (!file_path) {
+            file_path = std::getenv("TT_METAL_LOGGER_FILE");
+        }
 
         if (file_path && strlen(file_path) > 0) {
             auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(file_path, true);
@@ -170,6 +177,10 @@ class LoggerRegistry {
 
     void apply_log_type_filtering(spdlog::level::level_enum default_level) {
         const char * types_env = std::getenv("TT_LOGGER_TYPES");
+        if (!types_env) {
+            types_env = std::getenv("TT_METAL_LOGGER_TYPES");
+        }
+
         if (types_env) {
             std::string types_str = types_env;
 
