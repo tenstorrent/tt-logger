@@ -31,6 +31,7 @@
     X(Test)             \
     X(Timer)            \
     X(Device)           \
+    X(Distributed)      \
     X(LLRuntime)        \
     X(Loader)           \
     X(BuildKernels)     \
