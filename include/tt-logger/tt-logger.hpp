@@ -212,8 +212,8 @@ class LoggerRegistry {
 
   public:
     static LoggerRegistry & instance() {
-        static LoggerRegistry registry;
-        return registry;
+        static LoggerRegistry * registry = new LoggerRegistry();
+        return *registry;
     }
 
     std::shared_ptr<spdlog::logger> get(LogType type) { return loggers[static_cast<std::size_t>(type)]; }
