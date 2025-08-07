@@ -238,44 +238,44 @@ template <> struct formatter<tt::LogType> : fmt::formatter<std::string_view> {
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_TRACE
 #    define log_trace(type, ...) SPDLOG_LOGGER_TRACE(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_trace(type, ...) (void) 0
+#    define log_trace(type, ...) do {(void)(type); (void)(__VA_ARGS__);} while(0)
 #endif
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_DEBUG
 #    define log_debug(type, ...) SPDLOG_LOGGER_DEBUG(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_debug(type, ...) (void) 0
+#    define log_debug(type, ...) do {(void)(type); (void)(__VA_ARGS__);} while(0)
 #endif
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_INFO
 #    define log_info(type, ...) SPDLOG_LOGGER_INFO(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_info(type, ...) (void) 0
+#    define log_info(type, ...) do {(void)(type); (void)(__VA_ARGS__);} while(0)
 #endif
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_WARN
 #    define log_warning(type, ...) SPDLOG_LOGGER_WARN(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_warning(type, ...) (void) 0
+#    define log_warning(type, ...) do {(void)(type); (void)(__VA_ARGS__);} while(0)
 #endif
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_ERROR
 #    define log_error(type, ...) SPDLOG_LOGGER_ERROR(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_error(type, ...) (void) 0
+#    define log_error(type, ...) do {(void)(type); (void)(__VA_ARGS__);} while(0)
 #endif
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_CRITICAL
 #    define log_critical(type, ...) SPDLOG_LOGGER_CRITICAL(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_critical(type, ...) (void) 0
+#    define log_critical(type, ...) do {(void)(type); (void)(__VA_ARGS__);} while(0)
 #endif
 
 // Eventually deprecate log_fatal and use log_critical instead
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_CRITICAL
 #    define log_fatal(type, ...) SPDLOG_LOGGER_CRITICAL(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_fatal(type, ...) (void) 0
+#    define log_fatal(type, ...) do {(void)(type); (void)(__VA_ARGS__);} while(0)
 #endif
 
 #undef TT_LOGGER_TYPES
