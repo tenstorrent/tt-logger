@@ -59,7 +59,7 @@ int main() {
     std::set<int>    chip_ids = { 1, 2, 3 };
     std::vector<int> pci_ids  = { 4096, 8192, 12288 };
 
-    log_info(tt::LogSiliconDriver, "Opening chip ids: {} with pci ids: {}", chip_ids, pci_ids);
+    log_info(tt::LogUMD, "Opening chip ids: {} with pci ids: {}", chip_ids, pci_ids);
 
     std::cout << std::endl;
 
@@ -75,9 +75,9 @@ int main() {
 
     // Test 5: Log type to string mapping
     std::cout << "Test 5: Log type to string mapping" << std::endl;
-    std::cout << "Expected: Device, Op, LLRuntime, SiliconDriver" << std::endl;
+    std::cout << "Expected: Device, Op, LLRuntime, UMD" << std::endl;
     std::cout << "Actual output: " << tt::logtype_to_string(tt::LogDevice) << ", " << tt::logtype_to_string(tt::LogOp)
-              << ", " << tt::logtype_to_string(tt::LogLLRuntime) << ", " << tt::logtype_to_string(tt::LogSiliconDriver)
+              << ", " << tt::logtype_to_string(tt::LogLLRuntime) << ", " << tt::logtype_to_string(tt::LogUMD)
               << std::endl;
 
     std::cout << std::endl;

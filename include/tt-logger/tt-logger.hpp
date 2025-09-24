@@ -43,7 +43,7 @@
     X(TTNN)             \
     X(MetalTrace)       \
     X(Inspector)        \
-    X(SiliconDriver)    \
+    X(UMD)              \
     X(EmulationDriver)
 
 namespace tt {
