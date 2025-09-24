@@ -69,7 +69,7 @@ The following log categories are available:
 - TTNN
 - MetalTrace
 - Inspector
-- SiliconDriver
+- UMD
 - EmulationDriver
 
 Each category is prefixed with "Log" when used in code (e.g., `tt::LogDevice`, `tt::LogOp`, `tt::LogInspector`).
@@ -176,7 +176,7 @@ The `TT_LOGGER_TYPES` environment variable allows you to filter which log catego
 export TT_LOGGER_TYPES="Metal;TTNN"
 
 # Show all device-related logs
-export TT_LOGGER_TYPES="Device;SiliconDriver;EmulationDriver"
+export TT_LOGGER_TYPES="Device;UMD;EmulationDriver"
 ```
 
 ## Compile-time Log Level Control
