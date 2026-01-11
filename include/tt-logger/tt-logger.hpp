@@ -235,47 +235,111 @@ template <> struct formatter<tt::LogType> : fmt::formatter<std::string_view> {
 };
 }  // namespace fmt
 
+// =============================================================================
+// Disabled log macro support: consume arguments without evaluation to avoid
+// unused variable/parameter warnings when log levels are compile-time disabled.
+//
+// Uses __VA_OPT__ (C++20) with sizeof() to mark arguments as "used" at compile
+// time without any runtime evaluation or side effects.
+// =============================================================================
+
+// Detect __VA_OPT__ support:
+// - C++20 guarantees __VA_OPT__
+// - GCC 8+ and Clang 6+ support it in earlier modes with GNU extensions
+#if __cplusplus >= 202002L
+#    define TT_LOG_VA_OPT_SUPPORTED 1
+#elif defined(__GNUC__) && __GNUC__ >= 8 && !defined(__clang__)
+#    define TT_LOG_VA_OPT_SUPPORTED 1
+#elif defined(__clang__) && __clang_major__ >= 6
+#    define TT_LOG_VA_OPT_SUPPORTED 1
+#else
+#    define TT_LOG_VA_OPT_SUPPORTED 0
+#endif
+
+#if TT_LOG_VA_OPT_SUPPORTED
+
+// Suppress unused warnings without evaluating the expression (compile-time only via sizeof)
+#    define TT_LOG_UNUSED(expr) ((void)sizeof(expr))
+
+// FOR_EACH implementation using deferred expansion to work around the preprocessor "blue paint" rule.
+// The PARENS trick creates a token sequence that isn't immediately expanded, and EXPAND forces
+// multiple rounds of rescanning to eventually expand all iterations.
+#    define TT_LOG_PARENS ()
+
+// clang-format off
+// Multiple expansion levels to support up to 16 arguments (4^2 = 16 iterations)
+#    define TT_LOG_EXPAND(...)  TT_LOG_EXPAND2(TT_LOG_EXPAND2(TT_LOG_EXPAND2(TT_LOG_EXPAND2(__VA_ARGS__))))
+#    define TT_LOG_EXPAND2(...) TT_LOG_EXPAND1(TT_LOG_EXPAND1(TT_LOG_EXPAND1(TT_LOG_EXPAND1(__VA_ARGS__))))
+#    define TT_LOG_EXPAND1(...) __VA_ARGS__
+// clang-format on
+
+// FOR_EACH: Apply TT_LOG_UNUSED to each argument
+#    define TT_LOG_FOR_EACH_HELPER(a1, ...) \
+        TT_LOG_UNUSED(a1);                  \
+        __VA_OPT__(TT_LOG_FOR_EACH_AGAIN TT_LOG_PARENS(__VA_ARGS__))
+#    define TT_LOG_FOR_EACH_AGAIN() TT_LOG_FOR_EACH_HELPER
+
+#    define TT_LOG_UNUSED_EACH(...) __VA_OPT__(TT_LOG_EXPAND(TT_LOG_FOR_EACH_HELPER(__VA_ARGS__)))
+
+// Disabled log macro that consumes all arguments without evaluation
+#    define TT_LOG_DISABLED(type, ...)       \
+        do {                                 \
+            TT_LOG_UNUSED(type);             \
+            TT_LOG_UNUSED_EACH(__VA_ARGS__); \
+        } while (0)
+
+#else
+
+// Fallback for pre-C++20: simple (void)0 - will still produce unused warnings
+#    define TT_LOG_DISABLED(type, ...) (void)0
+
+#endif  // TT_LOG_VA_OPT_SUPPORTED
+
+// =============================================================================
+// Log macros
+// =============================================================================
+
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_TRACE
 #    define log_trace(type, ...) SPDLOG_LOGGER_TRACE(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_trace(type, ...) (void) 0
+#    define log_trace(type, ...) TT_LOG_DISABLED(type, __VA_ARGS__)
 #endif
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_DEBUG
 #    define log_debug(type, ...) SPDLOG_LOGGER_DEBUG(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_debug(type, ...) (void) 0
+#    define log_debug(type, ...) TT_LOG_DISABLED(type, __VA_ARGS__)
 #endif
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_INFO
 #    define log_info(type, ...) SPDLOG_LOGGER_INFO(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_info(type, ...) (void) 0
+#    define log_info(type, ...) TT_LOG_DISABLED(type, __VA_ARGS__)
 #endif
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_WARN
 #    define log_warning(type, ...) SPDLOG_LOGGER_WARN(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_warning(type, ...) (void) 0
+#    define log_warning(type, ...) TT_LOG_DISABLED(type, __VA_ARGS__)
 #endif
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_ERROR
 #    define log_error(type, ...) SPDLOG_LOGGER_ERROR(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_error(type, ...) (void) 0
+#    define log_error(type, ...) TT_LOG_DISABLED(type, __VA_ARGS__)
 #endif
 
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_CRITICAL
 #    define log_critical(type, ...) SPDLOG_LOGGER_CRITICAL(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_critical(type, ...) (void) 0
+#    define log_critical(type, ...) TT_LOG_DISABLED(type, __VA_ARGS__)
 #endif
 
 // Eventually deprecate log_fatal and use log_critical instead
 #if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_CRITICAL
 #    define log_fatal(type, ...) SPDLOG_LOGGER_CRITICAL(tt::LoggerRegistry::instance().get(type), __VA_ARGS__)
 #else
-#    define log_fatal(type, ...) (void) 0
+#    define log_fatal(type, ...) TT_LOG_DISABLED(type, __VA_ARGS__)
 #endif
 
 #undef TT_LOGGER_TYPES
