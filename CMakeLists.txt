@@ -1,14 +1,19 @@
 cmake_minimum_required(VERSION 3.14)
-project(tt-logger VERSION 1.1.7 LANGUAGES CXX)
+project(tt-logger VERSION 1.1.8 LANGUAGES CXX)
 
 include(GNUInstallDirs)
+
+option(TT_LOGGER_SPDLOG_HEADER_ONLY
+    "Use spdlog in header-only mode. When OFF (default), links against the compiled spdlog library for significantly faster build times."
+    OFF
+)
 
 include(cmake/CPM.cmake)
 if(NOT TARGET fmt::fmt-header-only)
     cpmaddpackage(NAME fmt GITHUB_REPOSITORY fmtlib/fmt GIT_TAG 11.1.4)
 endif()
 
-if(NOT TARGET spdlog::spdlog_header_only)
+if(NOT TARGET spdlog::spdlog)
     cpmaddpackage(
         NAME spdlog
         GITHUB_REPOSITORY gabime/spdlog
@@ -18,6 +23,13 @@ if(NOT TARGET spdlog::spdlog_header_only)
             "SPDLOG_INSTALL ON"
     )
 endif()
+
+if(TT_LOGGER_SPDLOG_HEADER_ONLY)
+    set(_tt_logger_spdlog_target spdlog::spdlog_header_only)
+else()
+    set(_tt_logger_spdlog_target spdlog::spdlog)
+endif()
+message(STATUS "tt-logger: using spdlog target ${_tt_logger_spdlog_target}")
 
 # Header-only library
 add_library(${PROJECT_NAME} INTERFACE)
@@ -48,7 +60,7 @@ endif()
 
 target_link_libraries(
     ${PROJECT_NAME}
-    INTERFACE spdlog::spdlog_header_only fmt::fmt-header-only
+    INTERFACE ${_tt_logger_spdlog_target} fmt::fmt-header-only
 )
 
 option(TT_LOGGER_INSTALL "Configure for installation" OFF)
