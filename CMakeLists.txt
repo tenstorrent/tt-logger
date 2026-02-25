@@ -13,7 +13,7 @@ if(NOT TARGET fmt::fmt-header-only)
     cpmaddpackage(NAME fmt GITHUB_REPOSITORY fmtlib/fmt GIT_TAG 11.1.4)
 endif()
 
-if(NOT TARGET spdlog::spdlog)
+if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog::spdlog_header_only)
     cpmaddpackage(
         NAME spdlog
         GITHUB_REPOSITORY gabime/spdlog
