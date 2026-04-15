@@ -39,6 +39,7 @@
     X(Op)               \
     X(Dispatch)         \
     X(Fabric)           \
+    X(FabricManager)    \
     X(Metal)            \
     X(TTNN)             \
     X(MetalTrace)       \

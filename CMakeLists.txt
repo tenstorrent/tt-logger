@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(tt-logger VERSION 1.1.8 LANGUAGES CXX)
+project(tt-logger VERSION 1.1.9 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
