@@ -65,6 +65,7 @@ The following log categories are available:
 - Op
 - Dispatch
 - Fabric
+- FabricManager
 - Metal
 - TTNN
 - MetalTrace
