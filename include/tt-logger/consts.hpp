@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-namespace tt {
+namespace tt::internal {
 
 // These are the environment variable names that we use to control the behaviour of logging.
 
@@ -16,4 +16,4 @@ constexpr const char* tt_remote_logger_socket_env   = "TT_REMOTE_LOGGER_SOCKET_F
 constexpr const char* tt_logger_types_env           = "TT_LOGGER_TYPES";
 constexpr const char* tt_metal_logger_types_env     = "TT_METAL_LOGGER_TYPES";
 
-} // namespace tt
+} // namespace tt::internal

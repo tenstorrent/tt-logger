@@ -107,9 +107,9 @@ class LoggerRegistry {
     LoggerRegistry & operator=(const LoggerRegistry &) = delete;
 
     static spdlog::level::level_enum get_default_log_level() {
-        const char * env_level = std::getenv(tt_log_level_env);
+        const char * env_level = std::getenv(internal::tt_log_level_env);
         if (!env_level) {
-            env_level = std::getenv(tt_metal_logger_level_env);
+            env_level = std::getenv(internal::tt_metal_logger_level_env);
         }
 
         if (env_level) {
@@ -160,9 +160,9 @@ class LoggerRegistry {
             "\033[37m%v\033[0m "                      // White message
             "\033[90m(%s:%#)\033[0m";                 // Dark gray source location
 
-        const char * file_path = std::getenv(tt_logger_file_env);
+        const char * file_path = std::getenv(internal::tt_logger_file_env);
         if (!file_path) {
-            file_path = std::getenv(tt_metal_logger_file_env);
+            file_path = std::getenv(internal::tt_metal_logger_file_env);
         }
 
         if (file_path && strlen(file_path) > 0) {
@@ -200,7 +200,7 @@ class LoggerRegistry {
         //     ::strcasecmp(enable_remote_logger_env, "on") == 0) {
         //     const char* socket_file = std::getenv(tt_remote_logger_socket_env);
         //     if (socket_file == nullptr) {
-                return std::make_shared<tt::RemoteLogSink_t>();
+                return std::make_shared<internal::RemoteLogSink_t>();
         //     } else {
         //         return std::make_shared<tt::RemoteLogSink_t>(socket_file);
         //     }
@@ -212,9 +212,9 @@ class LoggerRegistry {
     }
 
     void apply_log_type_filtering(spdlog::level::level_enum default_level) {
-        const char * types_env = std::getenv(tt_logger_types_env);
+        const char * types_env = std::getenv(internal::tt_logger_types_env);
         if (!types_env) {
-            types_env = std::getenv(tt_metal_logger_types_env);
+            types_env = std::getenv(internal::tt_metal_logger_types_env);
         }
 
         if (types_env) {

@@ -55,9 +55,9 @@ class LoggerInitializer {
         auto logger = std::make_shared<spdlog::logger>("", sink);
         if (enable_remote) {
             if (server_socket.empty()) {
-                logger->sinks().push_back(std::make_shared<RemoteLogSink_t>());
+                logger->sinks().push_back(std::make_shared<internal::RemoteLogSink_t>());
             } else {
-                logger->sinks().push_back(std::make_shared<RemoteLogSink_t>(server_socket));
+                logger->sinks().push_back(std::make_shared<internal::RemoteLogSink_t>(server_socket));
             }
         }
 
@@ -76,8 +76,8 @@ class LoggerInitializer {
      * @param level_env Environment variable name for log level
      * @param pattern The pattern string to use for log formatting
      */
-    LoggerInitializer(std::string file_env = tt_logger_file_env, std::string level_env = tt_log_level_env,
-                      std::string pattern = "", std::string enable_remote_env = tt_remote_logger_env, std::string server_socket_env = tt_remote_logger_socket_env) noexcept {
+    LoggerInitializer(std::string file_env = internal::tt_logger_file_env, std::string level_env = internal::tt_log_level_env,
+                      std::string pattern = "", std::string enable_remote_env = internal::tt_remote_logger_env, std::string server_socket_env = internal::tt_remote_logger_socket_env) noexcept {
         const char * file_path = std::getenv(file_env.c_str());
         auto         sink      = create_sink(file_path ? file_path : "");
         const char * remote_logger = std::getenv(enable_remote_env.c_str());
@@ -89,7 +89,7 @@ class LoggerInitializer {
                 enable_remote = true;
                 server_socket = std::getenv(server_socket_env.c_str());
             } else {
-                std::cerr << "Only use true or on to enable: " << tt_remote_logger_env << "\n";
+                std::cerr << "Only use true or on to enable: " << internal::tt_remote_logger_env << "\n";
             }
         }
 

@@ -22,6 +22,9 @@
 #include <atomic>
 #include <chrono>
 
+namespace tt::internal {
+
+
 template <typename T>
 class SimpleConcurrentQueue {
 private:
@@ -223,3 +226,5 @@ public:
      */
     bool is_shutdown() const { return shutdown_; }
 };
+
+} // namespace tt::internal

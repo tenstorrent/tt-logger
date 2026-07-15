@@ -7,7 +7,7 @@
 
 #include <unistd.h>
 
-namespace tt {
+namespace tt::internal {
 
 /**
  * Simple handle that makes sure we close the socket once we leave a scope.
@@ -45,4 +45,5 @@ struct SocketHandle {
 
     int socket_handle = -1;
 };
-}
+
+} // namespace tt::internal

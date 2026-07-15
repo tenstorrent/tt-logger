@@ -21,7 +21,7 @@
 #include <thread>
 #include <vector>
 
-namespace tt {
+namespace tt::internal {
 
 /**
  * This sink hooks into spdlog and queues the log messages to be fired over the socket
@@ -211,5 +211,5 @@ private:
 
 using RemoteLogSink_t = RemoteLogSink<std::mutex>;
 
-} // namespace tt
+} // namespace tt::internal
 
