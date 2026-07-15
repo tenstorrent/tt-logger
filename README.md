@@ -138,8 +138,8 @@ int main() {
     // Initialize logger with default environment variables
     tt::LoggerInitializer logger_init;
 
-    // Now you can use the logging functions
-    tt::log_info(tt::LogAlways, "Logger initialized");
+    // Now you can use the standard logging functions
+    spdlog::info("Logger initialized");
     return 0;
 }
 ```

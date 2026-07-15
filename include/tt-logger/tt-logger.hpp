@@ -4,9 +4,14 @@
 
 #pragma once
 
+#include <tt-logger/remote_log_sink.hpp>
+#include <tt-logger/consts.hpp>
+
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+
+#include <strings.h>
 
 #include <algorithm>
 #include <array>
@@ -78,10 +83,18 @@ class LoggerRegistry {
         // Create sink using the static method
         auto sink = create_sink();
 
+        std::vector<std::shared_ptr<spdlog::sinks::sink>> sinks;
+        sinks.push_back(sink);
+
+        // Create a remote sink if it's enabled.
+        auto remote_sink = create_remote_sink();
+        if (remote_sink) {
+            sinks.push_back(remote_sink);
+        }
         // Initialize loggers for each LogType
         std::size_t index = 0;
 #define X(name)                                                     \
-    loggers[index] = std::make_shared<spdlog::logger>(#name, sink); \
+    loggers[index] = std::make_shared<spdlog::logger>(#name, std::begin(sinks), std::end(sinks)); \
     loggers[index].get()->set_level(default_level);                 \
     loggers[index++].get()->flush_on(spdlog::level::critical);
         TT_LOGGER_TYPES
@@ -94,9 +107,9 @@ class LoggerRegistry {
     LoggerRegistry & operator=(const LoggerRegistry &) = delete;
 
     static spdlog::level::level_enum get_default_log_level() {
-        const char * env_level = std::getenv("TT_LOGGER_LEVEL");
+        const char * env_level = std::getenv(tt_log_level_env);
         if (!env_level) {
-            env_level = std::getenv("TT_METAL_LOGGER_LEVEL");
+            env_level = std::getenv(tt_metal_logger_level_env);
         }
 
         if (env_level) {
@@ -147,9 +160,9 @@ class LoggerRegistry {
             "\033[37m%v\033[0m "                      // White message
             "\033[90m(%s:%#)\033[0m";                 // Dark gray source location
 
-        const char * file_path = std::getenv("TT_LOGGER_FILE");
+        const char * file_path = std::getenv(tt_logger_file_env);
         if (!file_path) {
-            file_path = std::getenv("TT_METAL_LOGGER_FILE");
+            file_path = std::getenv(tt_metal_logger_file_env);
         }
 
         if (file_path && strlen(file_path) > 0) {
@@ -177,10 +190,31 @@ class LoggerRegistry {
         }
     }
 
+    std::shared_ptr<spdlog::sinks::sink> create_remote_sink() {
+        // const char * enable_remote_logger_env = std::getenv(tt_remote_logger_env);
+        // if (!enable_remote_logger_env) {
+        //     return {};
+        // }
+
+        // if (::strcasecmp(enable_remote_logger_env, "true") == 0 ||
+        //     ::strcasecmp(enable_remote_logger_env, "on") == 0) {
+        //     const char* socket_file = std::getenv(tt_remote_logger_socket_env);
+        //     if (socket_file == nullptr) {
+                return std::make_shared<tt::RemoteLogSink_t>();
+        //     } else {
+        //         return std::make_shared<tt::RemoteLogSink_t>(socket_file);
+        //     }
+        // } else {
+        //     std::cerr << "Please use true or on to enable: " << tt_remote_logger_env << "\n";
+        // }
+
+        // return {};
+    }
+
     void apply_log_type_filtering(spdlog::level::level_enum default_level) {
-        const char * types_env = std::getenv("TT_LOGGER_TYPES");
+        const char * types_env = std::getenv(tt_logger_types_env);
         if (!types_env) {
-            types_env = std::getenv("TT_METAL_LOGGER_TYPES");
+            types_env = std::getenv(tt_metal_logger_types_env);
         }
 
         if (types_env) {
