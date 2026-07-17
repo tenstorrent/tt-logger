@@ -15,6 +15,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <cstring>
@@ -48,7 +49,9 @@ public:
         try {
             process_messages_();
             sender_queue_.shutdown();
-            sender_thread_.join();
+            if (sender_thread_.joinable()) {
+                sender_thread_.join();
+            }
             ::unlink(server_path_.c_str());
         } catch (...) {
             // Not much we can do.
@@ -76,6 +79,11 @@ protected:
         spdlog::memory_buf_t formatted;
         spdlog::sinks::base_sink<Mutex>::formatter_->format(msg, formatted);
         std::string log_body(formatted.data(), formatted.size());
+
+        // If message is empty, do not queue it.
+        if (log_body.empty()) {
+            return;
+        }
 
         LogMessageInfo info{
             .message = log_body

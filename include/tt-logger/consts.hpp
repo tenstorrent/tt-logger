@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
+#include <cstddef>
+
 namespace tt::internal {
 
 // These are the environment variable names that we use to control the behaviour of logging.
@@ -16,7 +18,7 @@ constexpr const char* tt_logger_types_env           = "TT_LOGGER_TYPES";
 constexpr const char* tt_metal_logger_types_env     = "TT_METAL_LOGGER_TYPES";
 
 // Various buffer sizes.
-constexpr const size_t send_buffer_size     = 62000L;
-constexpr const size_t large_message_size   = 60000L;
+constexpr const std::size_t send_buffer_size     = 62000L;
+constexpr const std::size_t large_message_size   = 60000L;
 
 } // namespace tt::internal

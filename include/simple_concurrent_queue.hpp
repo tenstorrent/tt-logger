@@ -1,8 +1,7 @@
-#pragma once
-
-// SPDX-FileCopyrightText: © 2025 Tenstorrent USA, Inc.
+// SPDX-FileCopyrightText: © 2025 Tenstorrent AI ULC
 //
-// SPDX-License-Identifier: LicenseRef-All-Rights-Reserved
+// SPDX-License-Identifier: Apache-2.0
+#pragma once
 
 /*
  * util/simple_concurrent_queue.hpp
