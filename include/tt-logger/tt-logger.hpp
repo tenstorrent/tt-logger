@@ -191,24 +191,28 @@ class LoggerRegistry {
     }
 
     std::shared_ptr<spdlog::sinks::sink> create_remote_sink() {
-        // const char * enable_remote_logger_env = std::getenv(tt_remote_logger_env);
-        // if (!enable_remote_logger_env) {
-        //     return {};
-        // }
+        std::cerr << "create_remote_sink\n";
+        const char * enable_remote_logger_env = std::getenv(internal::tt_remote_logger_env);
+        if (!enable_remote_logger_env) {
+            std::cerr << "create_remote_sink: no value\n";
+           return {};
+        }
 
-        // if (::strcasecmp(enable_remote_logger_env, "true") == 0 ||
-        //     ::strcasecmp(enable_remote_logger_env, "on") == 0) {
-        //     const char* socket_file = std::getenv(tt_remote_logger_socket_env);
-        //     if (socket_file == nullptr) {
+        std::cerr << "enable_remote_logger_env = " << enable_remote_logger_env << "\n";
+
+        if (::strcasecmp(enable_remote_logger_env, "true") == 0 ||
+            ::strcasecmp(enable_remote_logger_env, "on") == 0) {
+            const char* socket_file = std::getenv(internal::tt_remote_logger_socket_env);
+            if (socket_file == nullptr) {
                 return std::make_shared<internal::RemoteLogSink_t>();
-        //     } else {
-        //         return std::make_shared<tt::RemoteLogSink_t>(socket_file);
-        //     }
-        // } else {
-        //     std::cerr << "Please use true or on to enable: " << tt_remote_logger_env << "\n";
-        // }
+            } else {
+                return std::make_shared<internal::RemoteLogSink_t>(socket_file);
+            }
+        } else {
+            std::cerr << "Please use true or on to enable: " << internal::tt_remote_logger_env << "\n";
+        }
 
-        // return {};
+        return {};
     }
 
     void apply_log_type_filtering(spdlog::level::level_enum default_level) {

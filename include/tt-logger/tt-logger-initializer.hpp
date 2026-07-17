@@ -87,14 +87,16 @@ class LoggerInitializer {
             if (::strcasecmp(remote_logger, "true") == 0 ||
                 ::strcasecmp(remote_logger, "on") == 0) {
                 enable_remote = true;
-                server_socket = std::getenv(server_socket_env.c_str());
+                const char* server_socket_file_env = std::getenv(server_socket_env.c_str());
+                if (server_socket_file_env != nullptr) {
+                    server_socket = server_socket_file_env;
+                }
             } else {
                 std::cerr << "Only use true or on to enable: " << internal::tt_remote_logger_env << "\n";
             }
         }
 
-        // TODO: Fixed enable_remote so it's not hard-coded.
-        configure_logger(sink, pattern, true, server_socket);
+        configure_logger(sink, pattern, enable_remote, server_socket);
 
         spdlog::cfg::load_env_levels(level_env.c_str());  // Defaults to "info" if no ENV var set
     }

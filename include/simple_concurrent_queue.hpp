@@ -21,6 +21,7 @@
 #include <condition_variable>
 #include <atomic>
 #include <chrono>
+#include <iostream>
 
 namespace tt::internal {
 
@@ -112,32 +113,6 @@ public:
         T item = std::move(queue_.front());
         queue_.pop();
         return item;
-    }
-
-    /**
-     * Removes everything currently in the queue when we got signalled.
-     *
-     * @return  All the items currently in the queue when we got singalled.  Can be empty, check shutdown flag.
-     */
-    std::vector<T> pop_all_wait() {
-        std::unique_lock<std::mutex> lock(mutex_);
-
-        std::vector<T> result;
-
-        // Wait until queue has data or is shutdown
-        cv_.wait(lock, [this] { return !queue_.empty() || shutdown_; });
-
-        // Check if we have data (might have lost race or be shutting down)
-        if (queue_.empty()) {
-            return result;
-        }
-
-        while(!queue_.empty()) {
-            result.push_back(std::move(queue_.front()));
-            queue_.pop();
-        }
-
-        return result;
     }
 
     /**
