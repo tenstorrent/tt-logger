@@ -238,7 +238,7 @@ private:
             }
 
             // You only get what can fit in the message buffer.
-            std::size_t len = std::min<std::size_t>(body.length()-1, send_buffer_.size() - buffer_len_ - sizeof(uint16_t));
+            std::size_t len = std::min<std::size_t>(body.length(), send_buffer_.size() - buffer_len_ - sizeof(uint16_t));
 
             // 2-byte length, big-endian.
             send_buffer_[idx++] = static_cast<uint8_t>(len >> 8) & 0xFF;
