@@ -10,6 +10,9 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+#include <spdlog/async_logger.h>
+#include <spdlog/details/thread_pool.h>
+#include <spdlog/sinks/udp_sink.h>
 
 #include <strings.h>
 
@@ -93,8 +96,9 @@ class LoggerRegistry {
         }
         // Initialize loggers for each LogType
         std::size_t index = 0;
+        //loggers[index] = std::make_shared<spdlog::logger>(#name, std::begin(sinks), std::end(sinks)); 
 #define X(name)                                                     \
-    loggers[index] = std::make_shared<spdlog::logger>(#name, std::begin(sinks), std::end(sinks)); \
+    loggers[index] = create_logger(#name, sink);                    \
     loggers[index].get()->set_level(default_level);                 \
     loggers[index++].get()->flush_on(spdlog::level::critical);
         TT_LOGGER_TYPES
@@ -213,6 +217,31 @@ class LoggerRegistry {
         }
 
         return {};
+    }
+
+    std::shared_ptr<spdlog::logger> create_logger(const char* name, const std::shared_ptr<spdlog::sinks::sink>& sink1) {
+        static std::shared_ptr<spdlog::details::thread_pool> tp = std::make_shared<spdlog::details::thread_pool>(8192, 1);
+        std::cerr << "create_logger\n";
+
+        const char * enable_remote_logger_env = std::getenv(internal::tt_remote_logger_env);
+
+        std::cerr << "create_logger: enable_remote_logger_env = " << enable_remote_logger_env << "\n";
+
+        if (enable_remote_logger_env != nullptr &&
+            (::strcasecmp(enable_remote_logger_env, "true") == 0 ||
+             ::strcasecmp(enable_remote_logger_env, "on") == 0)) {
+                std::cerr << "create_logger: Using async logger with udp_sink and original configured logger.\n";
+                auto udp_sink = std::make_shared<spdlog::sinks::udp_sink_mt>(spdlog::sinks::udp_sink_config{"127.0.0.1", 11091});
+                std::vector<std::shared_ptr<spdlog::sinks::sink>> sinks{sink1, udp_sink};
+                auto async_logger = std::make_shared<spdlog::async_logger>(name, 
+                                                                           std::begin(sinks),
+                                                                           std::end(sinks), 
+                                                                           tp, 
+                                                                           spdlog::async_overflow_policy::overrun_oldest);
+                return async_logger;
+        } 
+
+        return std::make_shared<spdlog::logger>(name, sink1);
     }
 
     void apply_log_type_filtering(spdlog::level::level_enum default_level) {
