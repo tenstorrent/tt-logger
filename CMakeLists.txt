@@ -10,7 +10,7 @@ option(TT_LOGGER_SPDLOG_HEADER_ONLY
 
 include(cmake/CPM.cmake)
 if(NOT TARGET fmt::fmt-header-only)
-    cpmaddpackage(NAME fmt GITHUB_REPOSITORY fmtlib/fmt GIT_TAG 12.2.0)
+    cpmaddpackage(NAME fmt GITHUB_REPOSITORY fmtlib/fmt GIT_TAG 12.2.0 OPTIONS "FMT_INSTALL ON")
 endif()
 
 if(NOT TARGET spdlog::spdlog AND NOT TARGET spdlog::spdlog_header_only)
