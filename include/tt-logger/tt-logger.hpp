@@ -26,6 +26,14 @@
 #    include <unistd.h>
 #endif
 
+// Append new types at the end only; never insert or reorder.
+//
+// A type's value is its position in this list, and the value is compiled into
+// every caller. Libraries built against different tt-logger versions can end up
+// sharing one LoggerRegistry in the same process, because instance() is an
+// inline function whose static the dynamic linker merges across shared objects.
+// Renumbering an existing type then silently sends an older library's records
+// to the wrong logger.
 #define TT_LOGGER_TYPES \
     X(Always)           \
     X(Test)             \
@@ -39,13 +47,13 @@
     X(Op)               \
     X(Dispatch)         \
     X(Fabric)           \
-    X(FabricManager)    \
     X(Metal)            \
     X(TTNN)             \
     X(MetalTrace)       \
     X(Inspector)        \
     X(UMD)              \
-    X(EmulationDriver)
+    X(EmulationDriver)  \
+    X(FabricManager)
 
 namespace tt {
 
@@ -56,7 +64,11 @@ enum LogType {
 #undef X
 };
 
-constexpr std::array<const char *, std::size_t(LogType::LogEmulationDriver) + 1> log_type_names = {
+#define X(name) +1
+constexpr std::size_t log_type_count = 0 TT_LOGGER_TYPES;
+#undef X
+
+constexpr std::array<const char *, log_type_count> log_type_names = {
 #define X(name) #name,
     TT_LOGGER_TYPES
 #undef X
