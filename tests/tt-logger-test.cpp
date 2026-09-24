@@ -23,6 +23,17 @@
 #include <tt-logger/tt-logger.hpp>
 #include <vector>
 
+// Released LogType values are part of the ABI: libraries built against
+// different tt-logger versions can share one registry, so these must never
+// change. Add a line here whenever a type is appended.
+static_assert(tt::LogAlways == 0);
+static_assert(tt::LogFabric == 11);
+static_assert(tt::LogMetal == 12);
+static_assert(tt::LogUMD == 16);
+static_assert(tt::LogEmulationDriver == 17);
+static_assert(tt::LogFabricManager == 18);
+static_assert(tt::log_type_names.size() == 19);
+
 int main() {
     std::cout << "=== TT-Logger Simple Test Program ===" << std::endl;
     std::cout << std::endl;
